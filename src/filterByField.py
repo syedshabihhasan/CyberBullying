@@ -17,6 +17,7 @@ class filterfields:
         for data_row in self.data:
             if to_equate == data_row[field_no]:
                 filtered_data.append(data_row)
+        print 'Original data: ', len(self.data), ' filtered data:', len(filtered_data)
         return filtered_data
 
     def __init__(self, fname):
