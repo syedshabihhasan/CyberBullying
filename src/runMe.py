@@ -16,8 +16,8 @@ def createandsavegraph(data, filepath):
     pid_dict = hlp.getuniqueparticipants(data)
     links, links_tuple = hlp.getlinks(pid_dict, data)
     graph_obj = creategraph(is_directed=True)
-    graph_obj.addnodes(pid_dict['participant'], 'P')
-    graph_obj.addnodes(pid_dict['phone'], 'NP')
+    graph_obj.addnodes(pid_dict['participant'].values(), 'P')
+    graph_obj.addnodes(pid_dict['phone'].values(), 'NP')
     graph_obj.addedges(links_tuple)
     graph_obj.writegraph(filepath)
 
