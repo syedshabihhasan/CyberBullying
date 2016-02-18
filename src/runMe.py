@@ -31,8 +31,8 @@ def creategraph(data, isStatic = True):
     else:
         start_datetime = dt.datetime.strptime('2014-12-11 00:00:00', '%Y-%m-%d %H:%M:%S')
         week_dict, link_tuple = hlp.getdynamiclinks(pid_dict, data, start_datetime)
-        toWrite_edge, toWrite_node = graph_obj.exportdynamicgraph(link_tuple, pid_dict)
-        return toWrite_edge, toWrite_node, week_dict
+        to_write_edge, to_write_node = graph_obj.exportdynamicgraph(link_tuple, pid_dict)
+        return to_write_edge, to_write_node, week_dict
 
 def main():
     ff = filterfields(sys.argv[1])
@@ -45,9 +45,9 @@ def main():
         links, link_tuple, graph_obj = creategraph(sms_data)
         graph_obj.writegraph(sys.argv[3])
     if '-' is not sys.argv[4]:
-        toWrite_edge, toWrite_node, week_dict = creategraph(sms_data, False)
-        writetofile(sys.argv[4]+'_el.csv', toWrite_edge)
-        writetofile(sys.argv[4]+'_nl.csv', toWrite_node)
+        to_write_edge, to_write_nodes, week_dict = creategraph(sms_data, False)
+        writetofile(sys.argv[4]+'_el.csv', to_write_edge)
+        writetofile(sys.argv[4]+'_nl.csv', to_write_nodes)
 
 if __name__ == "__main__":
     if not (5 == len(sys.argv)):
