@@ -3,6 +3,9 @@ import csv
 class filterfields:
     data = []
 
+    def setdata(self, data):
+        self.data = data
+        
     def __readfile(self, fname):
         temp_data = []
         f = open(fname, 'r')

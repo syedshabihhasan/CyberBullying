@@ -1,3 +1,6 @@
+import datetime as dt
+
+
 def getuniqueparticipants(data):
     pid_dict = {'participant': {}, 'phone': {}}
     pid = 1
@@ -41,3 +44,30 @@ def getlinks(pid_dict, data):
         links_tuple.append((src, dst, {'weight': wt}))
     print '# unique links: ', len(links_tuple)
     return links, links_tuple
+
+
+def getdynamiclinks(pid_dict, data, start_datetime):
+    links_tuple = []
+    week_dict = {}
+    for datum in data:
+        src = getpid(pid_dict, datum[2])
+        dst = getpid(pid_dict, datum[3])
+        c_dt = dt.datetime.strptime(datum[-3], '%Y-%m-%d %H:%M:%S')
+        td = c_dt - start_datetime
+        week_of_study = (td.days // 7) + 1
+        if week_of_study not in week_dict:
+            week_dict[week_of_study] = {}
+        temp = week_dict[week_of_study]
+        if (src, dst) not in temp:
+            temp[(src, dst)] = 0
+        temp[(src, dst)] += 1
+        week_dict[week_of_study] = temp
+    idx = 0
+    for week_no in week_dict.keys():
+        week_data = week_dict[week_no]
+        for src_dst in week_data.keys():
+            toWrite = str(src_dst[0]) + ';' + str(src_dst[1]) + ';Directed;' + str(week_data[src_dst]) + ';' + \
+                      str(week_no - 1) + ';' + str(week_no) + ';' + str(idx)
+            links_tuple.append(toWrite)
+            idx += 1
+    return week_dict, links_tuple
