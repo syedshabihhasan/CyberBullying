@@ -1,8 +1,9 @@
 import datetime as dt
+from basicInfo import privateInfo as pr
 
 
-def getuniqueparticipants(data):
-    pid_dict = {'participant': {}, 'phone': {}}
+def getuniqueparticipants(data, mtype):
+    pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}}
     pid = 1
     for datum in data:
         temp = pid_dict[datum[-2]]

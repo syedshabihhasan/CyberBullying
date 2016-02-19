@@ -5,7 +5,7 @@ class filterfields:
 
     def setdata(self, data):
         self.data = data
-        
+
     def __readfile(self, fname):
         temp_data = []
         f = open(fname, 'r')
@@ -18,7 +18,7 @@ class filterfields:
     def filterbyequality(self, field_no, to_equate):
         filtered_data = []
         for data_row in self.data:
-            if to_equate == data_row[field_no]:
+            if to_equate in data_row[field_no]:
                 filtered_data.append(data_row)
         print 'Original data: ', len(self.data), ' filtered data:', len(filtered_data)
         return filtered_data
