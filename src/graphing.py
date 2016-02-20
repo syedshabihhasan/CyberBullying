@@ -3,6 +3,9 @@ import networkx as nx
 class creategraph:
     G = None
 
+    def getaverageCC(self):
+        return nx.average_clustering(self.G)
+
     def gettriadiccensus(self):
         return nx.triadic_census(self.G)
 
@@ -31,6 +34,10 @@ class creategraph:
         for nprt in node_dict['phone'].values():
             toWrite_node += str(nprt) + ';NP\n'
         return toWrite_edge, toWrite_node
+
+    def getgraphobject(self):
+        return self.G
+
 
     def __init__(self, is_directed = False):
         self.G = nx.DiGraph() if is_directed else nx.Graph()

@@ -1,10 +1,12 @@
-import sys
 import csv
-from filterByField import filterfields
-import helper as hlp
-from graphing import creategraph as graph
 import datetime as dt
+import sys
+
+import helper as hlp
 from basicInfo import privateInfo as pr
+from filterByField import filterfields
+from graphing import creategraph as graph
+
 
 def writetofile(filepath, data, isDict = False):
     print 'writing: ', filepath
@@ -25,35 +27,43 @@ def writecsv(filename, data):
     print 'done'
     f.close()
 
-def creategraph(data, isStatic = True):
+
+def creategraph(data, isStatic = True, filterType = 'sms'):
     pid_dict = hlp.getuniqueparticipants(data, sys.argv[6])
     graph_obj = graph(is_directed=True)
     if isStatic:
         links, link_tuple = hlp.getlinks(pid_dict, data)
-        graph_obj.addnodes(pid_dict['participant'].values(), 'P')
-        graph_obj.addnodes(pid_dict['phone'].values(), 'NP')
+        graph_obj.addnodes(pid_dict[pr.participant[filterType]].values(), 'P')
+        graph_obj.addnodes(pid_dict[pr.nparticipant[filterType]].values(), 'NP')
         graph_obj.addedges(link_tuple)
-        return links, link_tuple, graph_obj
+        return links, link_tuple, graph_obj, pid_dict
     else:
         start_datetime = dt.datetime.strptime(pr.start_datetime, '%Y-%m-%d %H:%M:%S')
         week_dict, link_tuple = hlp.getdynamiclinks(pid_dict, data, start_datetime)
         to_write_edge, to_write_node = graph_obj.exportdynamicgraph(link_tuple, pid_dict)
-        return to_write_edge, to_write_node, week_dict
+        return to_write_edge, to_write_node, week_dict, pid_dict
 
 def main():
     ff = filterfields(sys.argv[1])
     print 'filtering...'
     filtered_data = ff.filterbyequality(pr.m_type, sys.argv[6])
+    hlp.dumpvariable(filtered_data, 'filtered_'+sys.argv[6])
     print 'done'
     if '-' is not sys.argv[2]:
         writecsv(sys.argv[2], filtered_data)
     if '-' is not sys.argv[3]:
-        links, link_tuple, graph_obj = creategraph(filtered_data)
+        links, link_tuple, graph_obj, pid_dict = creategraph(filtered_data)
+        hlp.dumpvariable(links, 'static_links')
+        hlp.dumpvariable(link_tuple, 'static_links_tuple')
+        hlp.dumpvariable(graph_obj, 'static_graph_obj')
+        hlp.dumpvariable(pid_dict, 'pid_dict')
         graph_obj.writegraph(sys.argv[3])
     if '-' is not sys.argv[4]:
-        to_write_edge, to_write_nodes, week_dict = creategraph(filtered_data, False)
+        to_write_edge, to_write_nodes, week_dict, pid_dict = creategraph(filtered_data, False)
         writetofile(sys.argv[4]+'_el.csv', to_write_edge)
         writetofile(sys.argv[4]+'_nl.csv', to_write_nodes)
+        hlp.dumpvariable(week_dict, 'dynamic_week_dict')
+        hlp.dumpvariable(pid_dict, 'pid_dict')
     if '-' is not sys.argv[5]:
         pid_dict = hlp.getuniqueparticipants(filtered_data, sys.argv[6])
         complete_dict = pid_dict['participant']

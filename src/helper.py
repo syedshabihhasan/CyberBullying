@@ -1,6 +1,14 @@
 import datetime as dt
+import os
+import pickle
+
 from basicInfo import privateInfo as pr
 
+
+def dumpvariable(data, fname):
+    if not os.path.exists('./variables'):
+        os.mkdir('./variables')
+    pickle.dump(data, open('./variables/'+fname+'.p', 'wb'))
 
 def getuniqueparticipants(data, mtype):
     pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}}
@@ -16,7 +24,7 @@ def getuniqueparticipants(data, mtype):
             temp[datum[3]] = pid
             pid += 1
             pid_dict[datum[-1]] = temp
-    print 'Participant: ', len(pid_dict['participant']), 'Non: ', len(pid_dict['phone'])
+    print 'Participant: ', len(pid_dict[pr.participant[mtype]]), 'Non: ', len(pid_dict[pr.nparticipant[mtype]])
     return pid_dict
 
 
