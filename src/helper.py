@@ -10,6 +10,9 @@ def dumpvariable(data, fname):
         os.mkdir('./variables')
     pickle.dump(data, open('./variables/'+fname+'.p', 'wb'))
 
+def recovervariable(fname):
+    return pickle.load(open(fname, 'rb'))
+
 def getuniqueparticipants(data, mtype):
     pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}}
     pid = 1

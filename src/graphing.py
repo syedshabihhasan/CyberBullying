@@ -2,9 +2,16 @@ import networkx as nx
 
 class creategraph:
     G = None
+    is_directed = False
 
-    def getaverageCC(self):
-        return nx.average_clustering(self.G)
+    def getclosenesscentrality(self):
+        closeness_centrality = {'in': {}, 'out': {}} if self.is_directed else {}
+        if self.is_directed:
+            closeness_centrality['in'] = nx.in_degree_centrality(self.G)
+            closeness_centrality['out'] = nx.out_degree_centrality(self.G)
+        else:
+            closeness_centrality = nx.degree_centrality(self.G)
+        return closeness_centrality
 
     def gettriadiccensus(self):
         return nx.triadic_census(self.G)
@@ -38,6 +45,6 @@ class creategraph:
     def getgraphobject(self):
         return self.G
 
-
     def __init__(self, is_directed = False):
         self.G = nx.DiGraph() if is_directed else nx.Graph()
+        self.is_directed = is_directed
