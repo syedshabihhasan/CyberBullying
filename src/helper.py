@@ -60,6 +60,7 @@ def getlinks(pid_dict, data):
 
 def getdynamiclinks(pid_dict, data, start_datetime):
     links_tuple = []
+    week_content = {}
     week_dict = {}
     for datum in data:
         src = getpid(pid_dict, datum[2])
@@ -69,7 +70,9 @@ def getdynamiclinks(pid_dict, data, start_datetime):
         week_of_study = (td.days // 7) + 1
         if week_of_study not in week_dict:
             week_dict[week_of_study] = {}
+            week_content[week_of_study] = []
         temp = week_dict[week_of_study]
+        week_content[week_of_study].append(datum)
         if (src, dst) not in temp:
             temp[(src, dst)] = 0
         temp[(src, dst)] += 1
@@ -82,4 +85,4 @@ def getdynamiclinks(pid_dict, data, start_datetime):
                       str(week_no - 1) + ';' + str(week_no) + ';' + str(idx)
             links_tuple.append(toWrite)
             idx += 1
-    return week_dict, links_tuple
+    return week_dict, links_tuple, week_content

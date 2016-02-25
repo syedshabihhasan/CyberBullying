@@ -39,9 +39,9 @@ def creategraph(data, isStatic = True, filterType = 'sms'):
         return links, link_tuple, graph_obj, pid_dict
     else:
         start_datetime = dt.datetime.strptime(pr.start_datetime, '%Y-%m-%d %H:%M:%S')
-        week_dict, link_tuple = hlp.getdynamiclinks(pid_dict, data, start_datetime)
+        week_dict, link_tuple, week_content = hlp.getdynamiclinks(pid_dict, data, start_datetime)
         to_write_edge, to_write_node = graph_obj.exportdynamicgraph(link_tuple, pid_dict)
-        return to_write_edge, to_write_node, week_dict, pid_dict
+        return to_write_edge, to_write_node, week_dict, pid_dict, week_content
 
 def main():
     ff = filterfields(sys.argv[1])
@@ -59,11 +59,12 @@ def main():
         hlp.dumpvariable(pid_dict, 'pid_dict')
         graph_obj.writegraph(sys.argv[3])
     if '-' is not sys.argv[4]:
-        to_write_edge, to_write_nodes, week_dict, pid_dict = creategraph(filtered_data, False)
+        to_write_edge, to_write_nodes, week_dict, pid_dict, week_content = creategraph(filtered_data, False)
         writetofile(sys.argv[4]+'_el.csv', to_write_edge)
         writetofile(sys.argv[4]+'_nl.csv', to_write_nodes)
         hlp.dumpvariable(week_dict, 'dynamic_week_dict')
         hlp.dumpvariable(pid_dict, 'pid_dict')
+        hlp.dumpvariable(week_content, 'week_content')
     if '-' is not sys.argv[5]:
         pid_dict = hlp.getuniqueparticipants(filtered_data, sys.argv[6])
         complete_dict = pid_dict['participant']
