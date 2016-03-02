@@ -5,10 +5,10 @@ import pickle
 from basicInfo import privateInfo as pr
 
 
-def dumpvariable(data, fname):
-    if not os.path.exists('./variables'):
-        os.mkdir('./variables')
-    pickle.dump(data, open('./variables/'+fname+'.p', 'wb'))
+def dumpvariable(data, fname, dpath = './variables/'):
+    if not os.path.exists(dpath):
+        os.mkdir(dpath)
+    pickle.dump(data, open(dpath+fname+'.p', 'wb'))
 
 def recovervariable(fname):
     return pickle.load(open(fname, 'rb'))

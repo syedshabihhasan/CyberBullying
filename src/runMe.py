@@ -47,34 +47,29 @@ def main():
     ff = filterfields(sys.argv[1])
     print 'filtering...'
     filtered_data = ff.filterbyequality(pr.m_type, sys.argv[6])
-    hlp.dumpvariable(filtered_data, 'filtered_'+sys.argv[6])
+    hlp.dumpvariable(filtered_data, 'filtered_'+sys.argv[6], sys.argv[5])
     print 'done'
     if '-' is not sys.argv[2]:
         writecsv(sys.argv[2], filtered_data)
     if '-' is not sys.argv[3]:
         links, link_tuple, graph_obj, pid_dict = creategraph(filtered_data)
-        hlp.dumpvariable(links, 'static_links')
-        hlp.dumpvariable(link_tuple, 'static_links_tuple')
-        hlp.dumpvariable(graph_obj, 'static_graph_obj')
-        hlp.dumpvariable(pid_dict, 'pid_dict')
+        hlp.dumpvariable(links, 'static_links', sys.argv[5])
+        hlp.dumpvariable(link_tuple, 'static_links_tuple', sys.argv[5])
+        hlp.dumpvariable(graph_obj, 'static_graph_obj', sys.argv[5])
+        hlp.dumpvariable(pid_dict, 'pid_dict', sys.argv[5])
         graph_obj.writegraph(sys.argv[3])
     if '-' is not sys.argv[4]:
         to_write_edge, to_write_nodes, week_dict, pid_dict, week_content = creategraph(filtered_data, False)
         writetofile(sys.argv[4]+'_el.csv', to_write_edge)
         writetofile(sys.argv[4]+'_nl.csv', to_write_nodes)
-        hlp.dumpvariable(week_dict, 'dynamic_week_dict')
-        hlp.dumpvariable(pid_dict, 'pid_dict')
-        hlp.dumpvariable(week_content, 'week_content')
-    if '-' is not sys.argv[5]:
-        pid_dict = hlp.getuniqueparticipants(filtered_data, sys.argv[6])
-        complete_dict = pid_dict['participant']
-        complete_dict.update(pid_dict['phone'])
-        writetofile(sys.argv[5], complete_dict, True)
+        hlp.dumpvariable(week_dict, 'dynamic_week_dict', sys.argv[5])
+        hlp.dumpvariable(pid_dict, 'pid_dict', sys.argv[5])
+        hlp.dumpvariable(week_content, 'week_content', sys.argv[5])
 
 if __name__ == "__main__":
     if not (7 == len(sys.argv)):
         print 'Usage: python runMe.py <csv filename> <path for output filtered file, enter - for skipping> ' \
               '<path for graph file, enter - for skipping> <path for dynamic graph, enter - for skipping> ' \
-              '<path for the pid_dict, enter - for skipping> <message type to filter, currently supported: sms>'
+              '<path to directory for variable saving, trailing / required> <message type to filter, currently supported: sms>'
     else:
         main()
