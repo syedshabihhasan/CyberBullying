@@ -11,13 +11,15 @@ def main(f_sql_path, tablename, storage_path):
     for datum in cursor:
         data.append(datum)
     data = fieldnames + data
-    f = open(storage_path, 'w')
-    csv_obj = csv.writer(f, delimiter = ',')
-    print 'Writing...'
-    csv_obj.writerows(data)
-    f.close()
-    print 'done!'
-    return
+    if '' is not storage_path:
+        f = open(storage_path, 'w')
+        csv_obj = csv.writer(f, delimiter = ',')
+        print 'Writing...'
+        csv_obj.writerows(data)
+        f.close()
+        print 'done!'
+    else:
+        return data
 
 if __name__ == "__main__":
     if not (4 == len(sys.argv)):

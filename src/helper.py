@@ -1,9 +1,25 @@
 import datetime as dt
 import os
 import pickle
+import csv
 
 from basicInfo import privateInfo as pr
 
+
+def writecsv(data, filepath, delimiter_sym = ','):
+    f = open(filepath, 'w')
+    csv_obj = csv.writer(f, delimiter = delimiter_sym)
+    csv_obj.writerows(data)
+    f.close()
+
+def readcsv(filepath, delimiter_sym = ','):
+    f = open(filepath, 'r')
+    csv_obj = csv.reader(f, delimiter = delimiter_sym)
+    data = []
+    for row in csv_obj:
+        data.append(row)
+    f.close()
+    return data
 
 def dumpvariable(data, fname, dpath = './variables/'):
     if not os.path.exists(dpath):
