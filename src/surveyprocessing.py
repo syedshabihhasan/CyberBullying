@@ -36,7 +36,7 @@ class surveys:
             survey_dict[datum[sInfo.s_participant]][datum[sInfo.s_no]].append(datum)
         return survey_dict
 
-    def interpretanswers(self, data):
+    def interpretanswers(self, data, onlyWithResponse = False):
         columns = data[0]
         ndata = data[1:]
         toUse = []
@@ -47,6 +47,8 @@ class surveys:
                 if '1' == datum[idx]:
                     toAppend.append(qInfo[idx-sInfo.s_ans1])
             if [] == toAppend:
+                if onlyWithResponse:
+                    continue
                 toAppend.append('NA')
             toUse.append(datum[0:sInfo.s_ans1] + toAppend)
         data = []
