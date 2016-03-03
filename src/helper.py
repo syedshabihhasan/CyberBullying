@@ -24,7 +24,7 @@ def readcsv(filepath, delimiter_sym = ','):
 def dumpvariable(data, fname, dpath = './variables/'):
     if not os.path.exists(dpath):
         os.mkdir(dpath)
-    pickle.dump(data, open(dpath+fname+'.p', 'wb'))
+    pickle.dump(data, open(dpath+fname, 'wb'))
 
 def recovervariable(fname):
     return pickle.load(open(fname, 'rb'))
