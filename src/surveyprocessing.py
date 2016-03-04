@@ -1,6 +1,7 @@
 import sqlite3
 from basicInfo import surveyInfo as sInfo
 
+
 class surveys:
     def __normalizedata(self, data):
         ndata = []
@@ -14,7 +15,7 @@ class surveys:
     def importsqlascsv(self, f_sql_path, tablename):
         print 'Connecting to the DB'
         conn = sqlite3.connect(f_sql_path)
-        cursor = conn.execute('select * from '+tablename)
+        cursor = conn.execute('select * from ' + tablename)
         print 'Extracting the table'
         fieldnames = [[desc[0] for desc in cursor.description]]
         data = []
@@ -36,16 +37,16 @@ class surveys:
             survey_dict[datum[sInfo.s_participant]][datum[sInfo.s_no]].append(datum)
         return survey_dict
 
-    def interpretanswers(self, data, onlyWithResponse = False):
+    def interpretanswers(self, data, onlyWithResponse=False):
         columns = data[0]
         ndata = data[1:]
         toUse = []
         for datum in ndata:
             qInfo = sInfo.surveyQA[datum[sInfo.s_qno]]
             toAppend = []
-            for idx in range(sInfo.s_ans1, sInfo.s_ans5+1):
+            for idx in range(sInfo.s_ans1, sInfo.s_ans5 + 1):
                 if '1' == datum[idx]:
-                    toAppend.append(qInfo[idx-sInfo.s_ans1])
+                    toAppend.append(qInfo[idx - sInfo.s_ans1])
             if [] == toAppend:
                 if onlyWithResponse:
                     continue
@@ -55,6 +56,62 @@ class surveys:
         data = [columns] + toUse
         return data
 
-
     def __init__(self):
         pass
+
+
+class surveystats:
+    data = {}
+
+    def processdict(self, qno, ans=''):
+        toReturn = []
+        for participant in self.data.keys():
+            pdata = self.data[participant]
+            for sno in pdata.keys():
+                for datum in pdata[sno]:
+                    if datum[sInfo.s_qno] == qno:
+                        if '' == ans:
+                            toReturn.append(datum)
+                        else:
+                            for idx in range(sInfo.s_ans1, len(datum)):
+                                if ans in datum[idx]:
+                                    toReturn.append(datum)
+        return toReturn
+
+    def participantsreporting(self):
+        return len(self.data.keys()), self.data.keys()
+
+    def whowitnessedbullying(self, toWork=[]):
+        witnesses = []
+        if [] == toWork:
+            witnesses = self.processdict(sInfo.surveyQType['seenB'])
+        else:
+            for datum in toWork:
+                if datum[sInfo.s_qno] == sInfo.surveyQType['seenB']:
+                    witnesses.append(datum)
+        return witnesses
+
+    def whodidbullying(self, toWork=[]):
+        who_bullied = []
+        if [] == toWork:
+            who_bullied = self.processdict(sInfo.surveyQType['didB'], ans='yes')
+        else:
+            for datum in toWork:
+                if datum[sInfo.s_qno] == sInfo.surveyQType['didB']:
+                    for idx in range(sInfo.s_ans1, len(datum)):
+                        if 'yes' in datum[idx]:
+                            who_bullied.append(datum)
+        return who_bullied
+
+    def whowasbullied(self, toWork=[]):
+        who_was_bullied = []
+        if [] == toWork:
+            who_was_bullied = self.processdict(sInfo.surveyQType['wasB'])
+        else:
+            for datum in toWork:
+                if datum[sInfo.s_qno] == sInfo.surveyQType['wasB']:
+                    who_was_bullied.append(datum)
+        return who_was_bullied
+
+    def __init__(self, data):
+        self.data = data

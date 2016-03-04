@@ -19,7 +19,10 @@ def main(sql_path, variable_path):
 
     data_dict = s_obj.datatodict(ndata)
     hlp.dumpvariable(data_dict, 'survey_dict_interpret.dict', variable_path)
-    print 'done'
+
+    data_wR_dict = s_obj.datatodict(ndata_wR)
+    hlp.dumpvariable(data_wR_dict, 'survey_dict_with_response_interpret.dict', variable_path)
+
 
 if __name__ == "__main__":
     if not (3 == len(sys.argv)):

@@ -7,12 +7,15 @@ from basicInfo import privateInfo as pr
 
 
 def writecsv(data, filepath, delimiter_sym = ','):
+    print 'writing csv'
     f = open(filepath, 'w')
     csv_obj = csv.writer(f, delimiter = delimiter_sym)
     csv_obj.writerows(data)
     f.close()
+    print 'done'
 
 def readcsv(filepath, delimiter_sym = ','):
+    print 'reading csv'
     f = open(filepath, 'r')
     csv_obj = csv.reader(f, delimiter = delimiter_sym)
     data = []
@@ -22,11 +25,14 @@ def readcsv(filepath, delimiter_sym = ','):
     return data
 
 def dumpvariable(data, fname, dpath = './variables/'):
+    print 'writing variable'
     if not os.path.exists(dpath):
         os.mkdir(dpath)
     pickle.dump(data, open(dpath+fname, 'wb'))
+    print 'done'
 
 def recovervariable(fname):
+    print 'reading variable'
     return pickle.load(open(fname, 'rb'))
 
 def getuniqueparticipants(data, mtype):
