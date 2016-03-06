@@ -52,7 +52,6 @@ class surveys:
                     continue
                 toAppend.append('NA')
             toUse.append(datum[0:sInfo.s_ans1] + toAppend)
-        data = []
         data = [columns] + toUse
         return data
 
@@ -101,43 +100,23 @@ class surveystats:
         return len(self.data.keys()), self.data.keys()
 
     def whowitnessedbullying(self, toWork=[]):
-        witnesses = []
         if [] == toWork:
             witnesses = self.processdict(sInfo.surveyQType['seenB'])
         else:
-            '''
-            for datum in toWork:
-                if datum[sInfo.s_qno] == sInfo.surveyQType['seenB']:
-                    witnesses.append(datum)
-            '''
             witnesses = self.processdict(sInfo.surveyQType['seenB'], toWork = toWork)
         return witnesses
 
     def whodidbullying(self, toWork=[]):
-        who_bullied = []
         if [] == toWork:
             who_bullied = self.processdict(sInfo.surveyQType['didB'], ans='yes')
         else:
-            '''
-            for datum in toWork:
-                if datum[sInfo.s_qno] == sInfo.surveyQType['didB']:
-                    for idx in range(sInfo.s_ans1, len(datum)):
-                        if 'yes' in datum[idx]:
-                            who_bullied.append(datum)
-            '''
             who_bullied = self.processdict(sInfo.surveyQType['didB'], ans='yes', toWork = toWork)
         return who_bullied
 
     def whowasbullied(self, toWork=[]):
-        who_was_bullied = []
         if [] == toWork:
             who_was_bullied = self.processdict(sInfo.surveyQType['wasB'])
         else:
-            '''
-            for datum in toWork:
-                if datum[sInfo.s_qno] == sInfo.surveyQType['wasB']:
-                    who_was_bullied.append(datum)
-            '''
             who_was_bullied = self.processdict(sInfo.surveyQType['wasB'], toWork = toWork)
         return who_was_bullied
 
