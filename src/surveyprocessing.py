@@ -63,19 +63,38 @@ class surveys:
 class surveystats:
     data = {}
 
-    def processdict(self, qno, ans=''):
-        toReturn = []
-        for participant in self.data.keys():
-            pdata = self.data[participant]
-            for sno in pdata.keys():
-                for datum in pdata[sno]:
-                    if datum[sInfo.s_qno] == qno:
-                        if '' == ans:
-                            toReturn.append(datum)
-                        else:
-                            for idx in range(sInfo.s_ans1, len(datum)):
-                                if ans in datum[idx]:
-                                    toReturn.append(datum)
+    def processdict(self, qno, ans='', toWork = []):
+        toReturn = {} if [] == toWork else []
+        if [] == toWork:
+            for participant in self.data.keys():
+                pdata = self.data[participant]
+                for sno in pdata.keys():
+                    for datum in pdata[sno]:
+                        if datum[sInfo.s_qno] == qno:
+                            if '' == ans:
+                                #toReturn.append(datum)
+                                if participant not in toReturn:
+                                    toReturn[participant] = {}
+                                if sno not in toReturn[participant]:
+                                    toReturn[participant][sno] = []
+                                toReturn[participant][sno] = pdata[sno]
+                            else:
+                                for idx in range(sInfo.s_ans1, len(datum)):
+                                    if ans in datum[idx]:
+                                        if participant not in toReturn:
+                                            toReturn[participant] = {}
+                                        if sno not in toReturn[participant]:
+                                            toReturn[participant][sno] = []
+                                        toReturn[participant][sno] = pdata[sno]
+        else:
+            for datum in toWork:
+                if datum[sInfo.s_qno] == sInfo.surveyQType[qno]:
+                    if '' == ans:
+                        toReturn.append(datum)
+                    else:
+                        for idx in range(sInfo.s_ans1, len(datum)):
+                            if ans in datum[idx]:
+                                toReturn.append(datum)
         return toReturn
 
     def participantsreporting(self):
@@ -86,9 +105,12 @@ class surveystats:
         if [] == toWork:
             witnesses = self.processdict(sInfo.surveyQType['seenB'])
         else:
+            '''
             for datum in toWork:
                 if datum[sInfo.s_qno] == sInfo.surveyQType['seenB']:
                     witnesses.append(datum)
+            '''
+            witnesses = self.processdict(sInfo.surveyQType['seenB'], toWork = toWork)
         return witnesses
 
     def whodidbullying(self, toWork=[]):
@@ -96,11 +118,14 @@ class surveystats:
         if [] == toWork:
             who_bullied = self.processdict(sInfo.surveyQType['didB'], ans='yes')
         else:
+            '''
             for datum in toWork:
                 if datum[sInfo.s_qno] == sInfo.surveyQType['didB']:
                     for idx in range(sInfo.s_ans1, len(datum)):
                         if 'yes' in datum[idx]:
                             who_bullied.append(datum)
+            '''
+            who_bullied = self.processdict(sInfo.surveyQType['didB'], ans='yes', toWork = toWork)
         return who_bullied
 
     def whowasbullied(self, toWork=[]):
@@ -108,10 +133,16 @@ class surveystats:
         if [] == toWork:
             who_was_bullied = self.processdict(sInfo.surveyQType['wasB'])
         else:
+            '''
             for datum in toWork:
                 if datum[sInfo.s_qno] == sInfo.surveyQType['wasB']:
                     who_was_bullied.append(datum)
+            '''
+            who_was_bullied = self.processdict(sInfo.surveyQType['wasB'], toWork = toWork)
         return who_was_bullied
+
+    def updatedata(self, data):
+        self.data = data
 
     def __init__(self, data):
         self.data = data
