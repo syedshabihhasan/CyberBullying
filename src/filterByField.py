@@ -1,7 +1,21 @@
 import csv
+import datetime as dt
+from basicInfo import privateInfo as pr
 
 class filterfields:
     data = []
+
+    def converttodate(self, string_date, dt_format = '%Y-%m-%d %H:%M:%S'):
+        return dt.datetime.strptime(string_date, dt_format)
+
+    def filterbetweendates(self, start_date, end_date, data_to_work = []):
+        filtered_data = []
+        data_to_work = self.data if [] == data_to_work else data_to_work
+        for data_row in data_to_work:
+            cur_date = self.converttodate(data_row[pr.m_time_sent])
+            if start_date <= cur_date and cur_date <= end_date:
+                filtered_data.append(data_row)
+        return filtered_data
 
     def setdata(self, data):
         self.data = data

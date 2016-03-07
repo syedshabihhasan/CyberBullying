@@ -4,6 +4,16 @@ class creategraph:
     G = None
     is_directed = False
 
+    def getdegrees(self, node_id):
+        return [self.G.in_degree(node_id), self.G.out_degree(node_id)] \
+            if self.is_directed \
+            else self.G.degree(node_id)
+
+    def getedgeweights(self, node_id):
+        return [self.G.in_edges(node_id, data=True), self.G.out_edges(node_id, data=True)] \
+        if self.is_directed \
+        else self.G.edges(node_id, data=True)
+
     def getclosenesscentrality(self):
         closeness_centrality = {'in': {}, 'out': {}} if self.is_directed else {}
         if self.is_directed:

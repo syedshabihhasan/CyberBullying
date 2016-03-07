@@ -43,15 +43,19 @@ def main():
     filterA = args.f1a
     print 'Processing...'
     res = filtersurvey(ip_filepath, qno, answers)
+    to_save = {}
     print 'done'
     if not (None == filterQ):
         filterQ = filterQ[0]
         print 'second level filtering argument exists, filtering...'
         for ans in res.keys():
-            temp = res[ans]
-            res[ans] = filtersurvey(res[ans], filterQ, filterA, is_data=True)
+            temp = filtersurvey(res[ans], filterQ, filterA, is_data=True)
+            for ans1 in temp.keys():
+                to_save[(ans, ans1)] = temp[ans1]
         print 'done'
-    hlp.dumpvariable(res, op_filename, op_filepath)
+    else:
+        to_save = res
+    hlp.dumpvariable(to_save, op_filename, op_filepath)
 
 if __name__ == "__main__":
     main()
