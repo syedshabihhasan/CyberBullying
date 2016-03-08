@@ -31,10 +31,10 @@ def processgraph(graph_obj, participant_id):
     return {'indegree': in_degrees, 'outdegree': out_degrees, 'inweights': in_e_weights, 'outweights': out_e_weights}
 
 
-def graphstats(before_date_data_list, between_date_data_list, participant_id, p_type, original_start, p_start, ff_obj):
+def graphstats(before_date_data_list, between_date_data_list, participant_id,
+               p_type, original_start, p_start, ff_obj, pid_dict):
     if [] == before_date_data_list or [] == between_date_data_list:
         return [], []
-    pid_dict = hlp.getuniqueparticipants(before_date_data_list)
     pid = 0
     for key in pid_dict.keys():
         if participant_id in pid_dict[key]:
@@ -80,6 +80,7 @@ def getstats(filepath, participant_dict, p_type, message_type='sms'):
         if [] == p_data:
             print 'no data exists for pid: ' + participant_id
             continue
+        pid_dict = hlp.getuniqueparticipants(p_data)
         for survey_no in survey_no_list:
             print 'Participant no.', participant_id, ' S.no.: ', survey_no
             idx = survey_no
@@ -90,8 +91,8 @@ def getstats(filepath, participant_dict, p_type, message_type='sms'):
             original_start_date = ff.converttodate(pr.start_datetime)
             data_start_to_date = ff.filterbetweendates(original_start_date, start_date, data_to_work=p_data)
             between_stats, before_stats = graphstats(data_start_to_date, data_between_dates, participant_id, p_type,
-                                                     original_start_date, start_date, ff)
-            temp_dict = {'between': between_stats, 'before': before_stats}
+                                                     original_start_date, start_date, ff, pid_dict)
+            temp_dict = {'between': between_stats, 'before': before_stats, 'pid_dict': pid_dict}
             participant_stats[participant_id] = {idx: temp_dict}
     return participant_stats
 
