@@ -32,7 +32,7 @@ def processgraph(graph_obj, participant_id):
 
 
 def graphstats(before_date_data_list, between_date_data_list, participant_id,
-               p_type, original_start, p_start, ff_obj, pid_dict, cumulative_before = False):
+               p_type, original_start, p_start, ff_obj, pid_dict):
     if [] == before_date_data_list or [] == between_date_data_list:
         return [], []
     pid = 0
@@ -52,33 +52,20 @@ def graphstats(before_date_data_list, between_date_data_list, participant_id,
     loop_can_continue = True
     curr_start = original_start
     before_stats = []
-    if cumulative_before:
-        while loop_can_continue:
-            end_date = curr_start + dt.timedelta(days=7)
-            if end_date > p_start:
-                end_date = p_start
-                loop_can_continue = False
-            to_consider = ff_obj.filterbetweendates(curr_start, end_date, data_to_work=before_date_data_list)
-            if [] == to_consider:
-                curr_start = end_date
-                continue
-            graph_obj_before = createstaticgraph(pid_dict, to_consider)
-            temp = processgraph(graph_obj_before, pid)
-            temp['graph_obj'] = graph_obj_before.getgraphobject()
-            before_stats.append((curr_start, end_date, temp))
-            curr_start = end_date
-    else:
-        # look at just one week before
-        curr_start = p_start - dt.timedelta(days=7)
-        if curr_start < original_start:
-            curr_start = original_start
-        end_date = p_start
+    while loop_can_continue:
+        end_date = curr_start + dt.timedelta(days=7)
+        if end_date > p_start:
+            end_date = p_start
+            loop_can_continue = False
         to_consider = ff_obj.filterbetweendates(curr_start, end_date, data_to_work=before_date_data_list)
-        if not([] == to_consider):
-            graph_obj_before = createstaticgraph(pid_dict, to_consider)
-            temp = processgraph(graph_obj_before, pid)
-            temp['graph_obj'] = graph_obj_before.getgraphobject()
-            before_stats.append((curr_start, end_date, temp))
+        if [] == to_consider:
+            curr_start = end_date
+            continue
+        graph_obj_before = createstaticgraph(pid_dict, to_consider)
+        temp = processgraph(graph_obj_before, pid)
+        temp['graph_obj'] = graph_obj_before.getgraphobject()
+        before_stats.append((curr_start, end_date, temp))
+        curr_start = end_date
     return between_stats, before_stats
 
 
