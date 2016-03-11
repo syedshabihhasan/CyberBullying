@@ -1,8 +1,13 @@
 import networkx as nx
+import matplotlib.pyplot as plt
 
 class creategraph:
     G = None
     is_directed = False
+
+    def drawgraph(self):
+        nx.draw(self.G)
+        plt.show()
 
     def getdegrees(self, node_id):
         return [self.G.in_degree(node_id), self.G.out_degree(node_id)] \

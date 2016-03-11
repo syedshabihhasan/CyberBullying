@@ -4,35 +4,40 @@ import pickle
 import csv
 
 from basicInfo import privateInfo as pr
+from graphing import creategraph as graph
 
-def writecsv(data, filepath, delimiter_sym = ','):
+def writecsv(data, filepath, delimiter_sym=','):
     print 'writing csv'
     f = open(filepath, 'w')
-    csv_obj = csv.writer(f, delimiter = delimiter_sym)
+    csv_obj = csv.writer(f, delimiter=delimiter_sym)
     csv_obj.writerows(data)
     f.close()
     print 'done'
 
-def readcsv(filepath, delimiter_sym = ','):
+
+def readcsv(filepath, delimiter_sym=','):
     print 'reading csv'
     f = open(filepath, 'r')
-    csv_obj = csv.reader(f, delimiter = delimiter_sym)
+    csv_obj = csv.reader(f, delimiter=delimiter_sym)
     data = []
     for row in csv_obj:
         data.append(row)
     f.close()
     return data
 
-def dumpvariable(data, fname, dpath = './variables/'):
+
+def dumpvariable(data, fname, dpath='./variables/'):
     print 'writing variable'
     if not os.path.exists(dpath):
         os.mkdir(dpath)
-    pickle.dump(data, open(dpath+fname, 'wb'))
+    pickle.dump(data, open(dpath + fname, 'wb'))
     print 'done'
+
 
 def recovervariable(fname):
     print 'reading variable'
     return pickle.load(open(fname, 'rb'))
+
 
 def getuniqueparticipants(data, mtype='sms'):
     pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}}
@@ -52,15 +57,7 @@ def getuniqueparticipants(data, mtype='sms'):
     return pid_dict
 
 
-def getpid(pid_dict, pid, label_prt = 'participant', label_nprt = 'phone'):
-    '''
-    prt = pid_dict[label_prt]
-    nprt = pid_dict[label_nprt]
-    if pid in prt:
-        return prt[pid]
-    else:
-        return nprt[pid]
-    '''
+def getpid(pid_dict, pid, label_prt='participant', label_nprt='phone'):
     for p_type in pid_dict.keys():
         if pid in pid_dict[p_type]:
             return pid_dict[p_type][pid]
@@ -68,6 +65,8 @@ def getpid(pid_dict, pid, label_prt = 'participant', label_nprt = 'phone'):
 
 
 def getlinks(pid_dict, data):
+    if [] == data:
+        return {}, []
     links = {}
     for datum in data:
         src = getpid(pid_dict, datum[pr.m_source])
@@ -114,9 +113,27 @@ def getdynamiclinks(pid_dict, data, start_datetime):
             idx += 1
     return week_dict, links_tuple, week_content
 
+
 def removekey(v_dict, key):
     try:
         del v_dict[key]
     except:
         print 'there was an error...'
     return v_dict
+
+
+def creategraph(data, isStatic=True, filterType='sms', graph_directed=True, pid_dict=None):
+    pid_dict = getuniqueparticipants(data, filterType) if None is pid_dict else pid_dict
+    graph_obj = graph(is_directed=graph_directed)
+    if isStatic:
+        links, link_tuple = getlinks(pid_dict, data)
+        graph_obj.addnodes(pid_dict[pr.participant[filterType]].values(), 'P')
+        graph_obj.addnodes(pid_dict[pr.nparticipant[filterType]].values(), 'NP')
+        graph_obj.addedges(link_tuple)
+        return links, link_tuple, graph_obj, pid_dict
+    else:
+        start_datetime = dt.datetime.strptime(pr.start_datetime, '%Y-%m-%d %H:%M:%S')
+        week_dict, link_tuple, week_content = getdynamiclinks(pid_dict,
+                                                              data, start_datetime)
+        to_write_edge, to_write_node = graph_obj.exportdynamicgraph(link_tuple, pid_dict)
+        return to_write_edge, to_write_node, week_dict, pid_dict, week_content

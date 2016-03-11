@@ -13,7 +13,7 @@ class filterfields:
         data_to_work = self.data if [] == data_to_work else data_to_work
         for data_row in data_to_work:
             cur_date = self.converttodate(data_row[pr.m_time_sent])
-            if start_date <= cur_date and cur_date <= end_date:
+            if start_date <= cur_date and cur_date < end_date:
                 filtered_data.append(data_row)
         return filtered_data
 
@@ -21,6 +21,9 @@ class filterfields:
         self.data = data
 
     def __readfile(self, fname):
+        if '' == fname:
+            print 'no fname given, use setdata()'
+            return []
         temp_data = []
         f = open(fname, 'r')
         csv_obj = csv.reader(f, delimiter = ',')
