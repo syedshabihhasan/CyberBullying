@@ -33,9 +33,9 @@ class ghelper:
         to_return = set()
         for weekno in week_list:
             date_tuple = week_info[weekno]
-            if date_tuple[0] <= curr_start < date_tuple[1]:
+            if date_tuple[0] <= curr_start <= date_tuple[1]:
                 to_return.add(weekno)
-            if date_tuple[0] <= curr_end < date_tuple[1]:
+            if date_tuple[0] <= curr_end <= date_tuple[1]:
                 to_return.add(weekno)
         return list(to_return)
 
@@ -45,12 +45,10 @@ class ghelper:
         for category in catch_all_data.keys():
             cat_pid_dict = catch_all_data[category]
             for pid in cat_pid_dict.keys():
-                if pid not in week_info.keys():
-                    continue
                 sno_dict = cat_pid_dict[pid]
                 for sno in sno_dict.keys():
                     survey_time = sno_dict[sno][0][sr.s_time]
-                    week_list = self.liesinweeks(ff_obj.converttodate(survey_time), week_info[pid])
+                    week_list = self.liesinweeks(ff_obj.converttodate(survey_time), week_info)
                     if [] == week_list:
                         continue
                     if pid not in bullying_overlay.keys():
@@ -78,8 +76,10 @@ class ghelper:
             weekly_graphs[weekno] = graph_obj
         return weekly_graphs
 
-    def __perparticipantprocessing(self, pid, ff_obj, curr_min=None, curr_max=None, send_week_info=False):
+    def __perparticipantprocessing(self, pid, ff_obj, curr_min=None, curr_max=None,
+                                   send_week_info=False, week_info=None):
         print 'per participant processing: ', pid
+        week_info = {} if week_info is None else week_info
         pid_data = ff_obj.filterbyequality(pr.m_source, pid) + \
                    ff_obj.filterbyequality(pr.m_target, pid)
         if curr_min is None or curr_max is None:
@@ -90,36 +90,57 @@ class ghelper:
         start_date = curr_min
         end_date = curr_min + dt.timedelta(days=7)
         weekly_data = {}
-        week_info = {}
-        idx = 1
-        while loop_can_continue:
-            if end_date > curr_max:
-                end_date = curr_max
-                loop_can_continue = False
-            temp_data = ff_obj.filterbetweendates(start_date, end_date,
-                                                  data_to_work=pid_data)
-            weekly_data[idx] = temp_data
-            week_info[idx] = (start_date, end_date)
-            idx += 1
-            start_date = end_date
-            end_date = end_date + dt.timedelta(days=7)
-        return weekly_data, week_info if send_week_info else weekly_data
+        if {} == week_info:
+            idx = 1
+            while loop_can_continue:
+                if end_date > curr_max:
+                    end_date = curr_max
+                    loop_can_continue = False
+                temp_data = ff_obj.filterbetweendates(start_date, end_date,
+                                                      data_to_work=pid_data)
+                weekly_data[idx] = temp_data
+                week_info[idx] = (start_date, end_date)
+                idx += 1
+                start_date = end_date
+                end_date = end_date + dt.timedelta(days=7)
+        else:
+            for weekno in week_info.keys():
+                start_date = week_info[weekno][0]
+                end_date = week_info[weekno][1]
+                temp_data = ff_obj.filterbetweendates(start_date, end_date,
+                                                      data_to_work=pid_data)
+                weekly_data[weekno] = temp_data
+        if send_week_info:
+            return weekly_data, week_info
+        else:
+            return weekly_data
 
     def getweeklydistributions(self, pid_dict, message_list, message_type='sms',
-                               is_degree=True):
+                               is_degree=True, week_info=None):
         # is_degree = F --> edge weight distribution
+        week_info = {} if week_info is None else week_info
         participant_dict = pid_dict[pr.participant[message_type]]
         ff_obj = filterfields('')
         ff_obj.setdata(message_list)
-        min_date, max_date = self.getminmaxdates(message_list, ff_obj)
+        if week_info is not None:
+            min_week = min(week_info.keys())
+            max_week = max(week_info.keys())
+            min_date = week_info[min_week][0]
+            max_date = week_info[max_week][1]
+        else:
+            min_date, max_date = self.getminmaxdates(message_list, ff_obj)
         weekly_dist = {}
-        week_info = {}
         for pid in participant_dict.keys():
             weekly_dist[pid] = {}
-            weekly_dict, temp_week_info = self.__perparticipantprocessing(pid, ff_obj, curr_min=min_date,
-                                                                          curr_max=max_date, send_week_info=True)
+            if week_info is None:
+                weekly_dict, temp_week_info = self.__perparticipantprocessing(pid, ff_obj,
+                                                                              curr_min=min_date, curr_max=max_date,
+                                                                              send_week_info=True)
+                week_info[pid] = temp_week_info
+            else:
+                weekly_dict = self.__perparticipantprocessing(pid, ff_obj, curr_min=min_date, curr_max=max_date,
+                                                              send_week_info=False, week_info=week_info)
             weekly_graphs = self.__weeklygraphs(weekly_dict, pid_dict)
-            week_info[pid] = temp_week_info
             for weekno in weekly_graphs.keys():
                 go = weekly_graphs[weekno]
                 if is_degree:
@@ -150,6 +171,16 @@ class ghelper:
                     continue
             degrees = graph_obj.getdegrees(pid_to_use) if is_degree \
                 else graph_obj.getedgeweights(pid_to_use)
+            if not is_degree:
+                in_ew = degrees[0]
+                out_ew = degrees[1]
+                inw = 0
+                outw = 0
+                for edge_tuple in in_ew:
+                    inw += edge_tuple[2]['weight']
+                for edge_tuple in out_ew:
+                    outw += edge_tuple[2]['weight']
+                degrees = [inw, outw]
             if return_dict:
                 degree_distribution_in[pid] = degrees[0]
                 degree_distribution_out[pid] = degrees[1]
@@ -159,19 +190,19 @@ class ghelper:
         return degree_distribution_in, degree_distribution_out
 
     def generatedistributions(self, graph_obj, bullying_pid_dict, allP, other, pid_dict,
-                              message_type, cumulative_pid_list, in_dist=False):
+                              message_type, cumulative_pid_list, in_dist=False, is_degree=True):
         # remove all the participants who are not present
         deg_dist = {}
         for filter_type in bullying_pid_dict.keys():
             print filter_type
             pid_list = bullying_pid_dict[filter_type]
             degrees = self.getdegreedistribution(pid_dict, pid_list, graph_obj,
-                                                 m_type=message_type)
+                                                 m_type=message_type, is_degree=is_degree)
             deg_dist[filter_type] = degrees[0] if in_dist else degrees[1]
         if allP:
             degrees = self.getdegreedistribution(pid_dict,
                                                  pid_dict[pr.participant[message_type]],
-                                                 graph_obj, m_type=message_type)
+                                                 graph_obj, m_type=message_type, is_degree=is_degree)
             deg_dist['all'] = degrees[0] if in_dist else degrees[1]
         other_pid = []
         for pid in pid_dict[pr.participant[message_type]].keys():
@@ -179,7 +210,7 @@ class ghelper:
                 other_pid.append(pid)
         if other:
             degrees = self.getdegreedistribution(pid_dict, other_pid,
-                                                 graph_obj, m_type=message_type)
+                                                 graph_obj, m_type=message_type, is_degree=is_degree)
             deg_dist['none'] = degrees[0] if in_dist else degrees[1]
         return deg_dist
 

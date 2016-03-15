@@ -36,30 +36,33 @@ class plots:
                 p_data_out.append(p_dict[week_no][1])
             fig, axes = plt.subplots(2, 1, sharex=True, sharey=True)
             axes[0].plot(range(1, len(p_data_in)+1), p_data_in,
-                    'bo-', linewidth=2, label='In')
+                    'ko-', linewidth=2, label='In', alpha=0.5)
             axes[1].plot(range(1, len(p_data_out)+1), p_data_out,
-                    'bo-', linewidth=2, label='Out')
+                    'bo-', linewidth=2, label='Out', alpha=0.5)
             if to_superimpose:
                 axes[0] = self.superimposebullyingdata(to_superimpose, axes[0], p_data_in)
                 axes[1] = self.superimposebullyingdata(to_superimpose, axes[1], p_data_out)
             plt.suptitle(title + '('+pid+')')
             plt.xlabel(x_label)
             plt.ylabel(y_label)
+            art = []
             for ax in axes:
                 ax.set_xlabel(x_label)
                 ax.set_ylabel(y_label)
                 ax.set_xticks(np.arange(0, max(week_list)+1, 2))
-                ax.legend()
+                lgd = ax.legend(loc=2, bbox_to_anchor=(1.05, 1))
+                art.append(lgd)
                 ax.grid(True)
-            plt.savefig(location_to_store+pid+'.pdf')
+            plt.savefig(location_to_store+pid+'.pdf', additional_artists=art, bbox_inches='tight')
             plt.close(fig)
 
-    def generatetablehist(self, input_dictionary, file_path, generate_totals=False):
+    def generatetablehist(self, input_dictionary, file_path, generate_totals=False, bin_dist=-1):
         max_value = float('-inf')
+        bin_dist = 5 if -1 == bin_dist else bin_dist
         for key in input_dictionary.keys():
             max_value = max(input_dictionary[key]) if max(input_dictionary[key]) > max_value else max_value
-        max_value = int(ceil(max_value/5)*5)
-        bins = range(0, max_value+1, 5)
+        max_value = int(ceil(max_value/bin_dist)*bin_dist)
+        bins = range(0, max_value+1, bin_dist)
         print 'bins: ', bins, 'max:', max_value
         first_line = ['category']
         for idx in range(1, len(bins)):

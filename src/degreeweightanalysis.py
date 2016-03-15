@@ -3,15 +3,18 @@ import os
 import helper as hlp
 from basicInfo import exceptionstrings as e
 from basicInfo import privateInfo as pr
+from basicInfo import surveyInfo as sr
 from filterByField import filterfields
 from graphhelper import ghelper
 from plothelper import plots
+from createweeklyinfo import weeklyinfo
 
 
 def getfilterdata(filters_chosen, filter_files, cumulative_list=False, catch_all=False):
     data = {}
     cumulative_pid_list = []
     catch_all_data = {}
+    anchor_date = None
     for idx in range(len(filters_chosen)):
         loaded_data = hlp.recovervariable(filter_files[idx])
         temp = []
@@ -46,6 +49,8 @@ def main():
                         help='flag indicates that processing should include a plot of all participants')
     parser.add_argument('-s', '-S', type=str, required=True,
                         help='folder to store in, leading /')
+    parser.add_argument('-r', '-R', type=str, required=True,
+                        help='survey file')
 
     args = parser.parse_args()
     filters_chosen = args.l
@@ -61,8 +66,13 @@ def main():
         os.mkdir(location_to_store)
     message_file = args.m
     message_type = args.mt
+    survey_file = args.r
+
+    wi = weeklyinfo()
+    week_info = wi.getweeklyfo(survey_file)
     gh = ghelper()
     plt = plots()
+
 
     # get the filtered messages
     ff = filterfields(message_file)
@@ -82,31 +92,37 @@ def main():
     in_distributions = gh.generatedistributions(graph_obj, bullying_pid_dict, include_all_participants,
                                                 include_other_participants, pid_dict, message_type,
                                                 cumulative_bully_pid, in_dist=True)
+    in_distributions_ew = gh.generatedistributions(graph_obj, bullying_pid_dict, include_all_participants,
+                                                include_other_participants, pid_dict, message_type,
+                                                cumulative_bully_pid, in_dist=True, is_degree=False)
     plt.generatetablehist(in_distributions, location_to_store + 'in_degree_table.csv', generate_totals=True)
+    plt.generatetablehist(in_distributions_ew, location_to_store + 'in_edge_weight.csv', generate_totals=True)
 
     # generate the distributions for out degree and plot them
     out_distributions = gh.generatedistributions(graph_obj, bullying_pid_dict, include_all_participants,
                                                  include_other_participants, pid_dict, message_type,
                                                  cumulative_bully_pid, in_dist=False)
+    out_distributions_ew = gh.generatedistributions(graph_obj, bullying_pid_dict, include_all_participants,
+                                                 include_other_participants, pid_dict, message_type,
+                                                 cumulative_bully_pid, in_dist=False)
     plt.generatetablehist(out_distributions, location_to_store + 'out_degree_table.csv', generate_totals=True)
+    plt.generatetablehist(out_distributions_ew, location_to_store + 'out_edge_weight.csv', generate_totals=True)
 
 
     # line plot of degrees
-    weekly_dist_degrees, week_info = gh.getweeklydistributions(pid_dict, filtered_data,
+    weekly_dist_degrees, ignore_me= gh.getweeklydistributions(pid_dict, filtered_data,
                                                     message_type=message_type,
-                                                    is_degree=True)
+                                                    is_degree=True, week_info=week_info)
     overlay_info = gh.createbullyingoverlay(catch_all_data, week_info, ff)
-    plt.plotweeklyprogression(weekly_dist_degrees, location_to_store+'deg_', 'Degree Dist',
-                              'Week No', 'Degree', overlay_date=overlay_info)
+    plt.plotweeklyprogression(weekly_dist_degrees, location_to_store+'deg_', 'No of friends',
+                              'Week No', 'Friends', overlay_date=overlay_info)
     # line plot of weights
-    weekly_dist_ew, week_info = gh.getweeklydistributions(pid_dict, filtered_data,
+    weekly_dist_ew, ignore_me = gh.getweeklydistributions(pid_dict, filtered_data,
                                                     message_type=message_type,
-                                                    is_degree=False)
+                                                    is_degree=False, week_info=week_info)
     overlay_info = gh.createbullyingoverlay(catch_all_data, week_info, ff)
-    plt.plotweeklyprogression(weekly_dist_ew, location_to_store+'ew_', 'Edge Weight Dist',
-                              'Week No', 'Weight', overlay_date=overlay_info)
+    plt.plotweeklyprogression(weekly_dist_ew, location_to_store+'ew_', 'No. of messages exchanged',
+                              'Week No', 'Messages', overlay_date=overlay_info)
     print 'TADAAA!'
-
-
 if __name__ == "__main__":
     main()
