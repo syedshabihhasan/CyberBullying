@@ -51,9 +51,8 @@ class sentiment:
     def removepunctuation(self, string_line):
         return string_line.translate(None, string.punctuation)
 
-    def cleanandcreatemlset(self, training_data, testing_data, testing_has_labels=True):
+    def createtrainingset(self, training_data):
         cleaned_training_data = []
-        cleaned_testing_data = []
         print 'training set'
         for (message, label) in training_data:
             message = message.lower()
@@ -63,7 +62,12 @@ class sentiment:
             stemmed_words = self.stemwords(stop_words_removed)
             self.setwordlist(stemmed_words)
             cleaned_training_data.append((stemmed_words, label))
+        training_set = self.createmlset(cleaned_training_data)
 
+        return training_set
+
+    def createtestingset(self, testing_data, testing_has_labels=True):
+        cleaned_testing_data = []
         print 'testing set'
         for maybe_tuple in testing_data:
             message = maybe_tuple[0] if testing_has_labels else maybe_tuple
@@ -74,12 +78,9 @@ class sentiment:
             stemmed_words = self.stemwords(stop_words_removed)
             cleaned_testing_data.append(
                     (stemmed_words, maybe_tuple[1]) if testing_has_labels else stemmed_words)
-
-        print 'training set ML'
-        training_set = self.createmlset(cleaned_training_data)
-        print 'testing set ML'
         testing_set = self.createmlset(cleaned_testing_data, testing_has_labels)
-        return training_set, testing_set
+
+        return testing_set
 
     def __init__(self):
         self.feature_word_list = set()
