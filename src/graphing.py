@@ -3,11 +3,18 @@ import matplotlib.pyplot as plt
 
 class creategraph:
     G = None
-    is_directed = False
+    is_directed = None
+    is_multigraph = None
 
     def drawgraph(self):
         nx.draw(self.G)
         plt.show()
+
+    def __getmultigraphdegrees(self, node_id):
+        pass
+
+    def __getmultigraphedgeweights(self, node_id):
+        pass
 
     def getdegrees(self, node_id):
         return [self.G.in_degree(node_id), self.G.out_degree(node_id)] \
@@ -60,6 +67,10 @@ class creategraph:
     def getgraphobject(self):
         return self.G
 
-    def __init__(self, is_directed = False):
-        self.G = nx.DiGraph() if is_directed else nx.Graph()
-        self.is_directed = is_directed
+    def __init__(self, is_directed = False, is_multigraph=False):
+        if is_multigraph:
+            self.G = nx.MultiDiGraph() if is_directed else nx.MultiGraph()
+            self.is_directed = is_directed
+        else:
+            self.G = nx.DiGraph() if is_directed else nx.Graph()
+            self.is_directed = is_directed

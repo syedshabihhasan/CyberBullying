@@ -68,11 +68,11 @@ class ghelper:
                 curr_max = to_consider_date if to_consider_date > curr_max else curr_max
         return curr_min, curr_max
 
-    def __weeklygraphs(self, weekly_dict, pid_dict):
+    def __weeklygraphs(self, weekly_dict, pid_dict, message_type='sms'):
         weekly_graphs = {}
         for weekno in weekly_dict.keys():
-            links, link_tuple, graph_obj, p_d = hlp.creategraph(weekly_dict[weekno],
-                                                                pid_dict=pid_dict)
+            links, link_tuple, graph_obj, p_d = hlp.creategraph(weekly_dict[weekno], pid_dict=pid_dict,
+                                                                filterType=message_type)
             weekly_graphs[weekno] = graph_obj
         return weekly_graphs
 
@@ -140,7 +140,7 @@ class ghelper:
             else:
                 weekly_dict = self.__perparticipantprocessing(pid, ff_obj, curr_min=min_date, curr_max=max_date,
                                                               send_week_info=False, week_info=week_info)
-            weekly_graphs = self.__weeklygraphs(weekly_dict, pid_dict)
+            weekly_graphs = self.__weeklygraphs(weekly_dict, pid_dict, message_type=message_type)
             for weekno in weekly_graphs.keys():
                 go = weekly_graphs[weekno]
                 if is_degree:

@@ -40,46 +40,99 @@ def recovervariable(fname):
 
 
 def getuniqueparticipants(data, mtype='sms'):
-    pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}}
+    #TODO: the participant/nonparticipant thing looks ugly. try cleaning.
+    pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}} \
+        if mtype != 'all' \
+        else {'participant': {}, 'nonparticipant': {}}
     pid = 1
     for datum in data:
-        temp = pid_dict[datum[pr.m_source_type]]
+        if 'None' == datum[pr.m_source_type]:
+            datum[pr.m_source_type] = 'facebook' if mtype == 'fb' else 'twitter'
+
+        if 'None' == datum[pr.m_target_type]:
+            datum[pr.m_target_type] = 'facebook' if mtype == 'fb' else 'twitter'
+
+        if mtype == 'all':
+            if datum[pr.m_source_type] in pid_dict:
+                temp = pid_dict['participant']
+            else:
+                temp = pid_dict['nonparticipant']
+        else:
+            temp = pid_dict[pr.src_dst_maps[datum[pr.m_source_type]]]
+
         if datum[pr.m_source] not in temp:
             temp[datum[pr.m_source]] = pid
             pid += 1
-            pid_dict[datum[pr.m_source_type]] = temp
-        temp = pid_dict[datum[pr.m_target_type]]
+            if mtype == 'all':
+                if datum[pr.m_source_type] in pid_dict:
+                    pid_dict['participant'] = temp
+                else:
+                    pid_dict['nonparticipant'] = temp
+            else:
+                pid_dict[pr.src_dst_maps[datum[pr.m_source_type]]] = temp
+
+        if mtype == 'all':
+            if datum[pr.m_target_type] in pid_dict:
+                temp = pid_dict['participant']
+            else:
+                temp = pid_dict['nonparticipant']
+        else:
+            temp = pid_dict[pr.src_dst_maps[datum[pr.m_target_type]]]
+
         if datum[pr.m_target] not in temp:
             temp[datum[pr.m_target]] = pid
             pid += 1
-            pid_dict[datum[pr.m_target_type]] = temp
-    print 'Participant: ', len(pid_dict[pr.participant[mtype]]), 'Non: ', len(pid_dict[pr.nparticipant[mtype]])
+            if mtype == 'all':
+                if datum[pr.m_target_type] in pid_dict:
+                    pid_dict['participant'] = temp
+                else:
+                    pid_dict['nonparticipant'] = temp
+            else:
+                pid_dict[pr.src_dst_maps[datum[pr.m_target_type]]] = temp
+    if mtype is 'all':
+        print 'Participant:', len(pid_dict['participant']), \
+            'Non: ', len(pid_dict['nonparticipant'])
+    else:
+        print 'Participant: ', len(pid_dict[pr.participant[mtype]]), \
+            'Non: ', len(pid_dict[pr.nparticipant[mtype]])
+
     return pid_dict
 
 
-def getpid(pid_dict, pid, label_prt='participant', label_nprt='phone'):
+def getpid(pid_dict, pid):
     for p_type in pid_dict.keys():
         if pid in pid_dict[p_type]:
             return pid_dict[p_type][pid]
     return None
 
 
-def getlinks(pid_dict, data):
+def getlinks(pid_dict, data, ignore_mtype=True):
     if [] == data:
         return {}, []
     links = {}
     for datum in data:
         src = getpid(pid_dict, datum[pr.m_source])
         dst = getpid(pid_dict, datum[pr.m_target])
-        if (src, dst) not in links:
-            links[(src, dst)] = 0
-        links[(src, dst)] += 1
+        if ignore_mtype:
+            if (src, dst) not in links:
+                links[(src, dst)] = 0
+            links[(src, dst)] += 1
+        else:
+            mtype = datum[pr.m_type].lower().split('_')[0]
+            if (src, dst, mtype) not in links:
+                links[(src, dst, mtype)] = 0
+            links[(src, dst, mtype)] += 1
     links_tuple = []
     for key in links.keys():
         src = key[0]
         dst = key[1]
+        if not ignore_mtype:
+            mtype = key[2]
         wt = links[key]
-        links_tuple.append((src, dst, {'weight': wt}))
+        if ignore_mtype:
+            links_tuple.append((src, dst, {'weight': wt}))
+        else:
+            links_tuple.append((src, dst, {'weight': wt, 'mtype': mtype}))
     print '# unique links: ', len(links_tuple)
     return links, links_tuple
 
@@ -124,9 +177,10 @@ def removekey(v_dict, key):
 
 def creategraph(data, isStatic=True, filterType='sms', graph_directed=True, pid_dict=None):
     pid_dict = getuniqueparticipants(data, filterType) if None is pid_dict else pid_dict
-    graph_obj = graph(is_directed=graph_directed)
+    graph_obj = graph(is_directed=graph_directed, is_multigraph= filterType == 'all')
     if isStatic:
-        links, link_tuple = getlinks(pid_dict, data)
+        ignore_mtype = filterType != 'all'
+        links, link_tuple = getlinks(pid_dict, data, ignore_mtype)
         graph_obj.addnodes(pid_dict[pr.participant[filterType]].values(), 'P')
         graph_obj.addnodes(pid_dict[pr.nparticipant[filterType]].values(), 'NP')
         graph_obj.addedges(link_tuple)
@@ -137,3 +191,26 @@ def creategraph(data, isStatic=True, filterType='sms', graph_directed=True, pid_
                                                               data, start_datetime)
         to_write_edge, to_write_node = graph_obj.exportdynamicgraph(link_tuple, pid_dict)
         return to_write_edge, to_write_node, week_dict, pid_dict, week_content
+
+def missingweeks(data, threshold_value = 0):
+    no_of_weeks = max(data[data.keys()[0]].keys())
+    per_week_msgs = {'In': [], 'Out': []}
+    missing_weeks_dict = {}
+    for idx in range(no_of_weeks+1):
+        temp = {'In': [], 'Out': []}
+        missing_weeks_dict[idx] = temp
+
+    for pid in data.keys():
+        pid_data = data[pid]
+        weeks_missing = {'In': 0, 'Out': 0}
+        for week_no in pid_data.keys():
+            per_week_msgs['In'].append(pid_data[week_no][0])
+            per_week_msgs['Out'].append(pid_data[week_no][1])
+            if threshold_value >= pid_data[week_no][0]:
+                weeks_missing['In'] += 1
+            if threshold_value >= pid_data[week_no][1]:
+                weeks_missing['Out'] += 1
+        missing_weeks_dict[weeks_missing['In']]['In'].append(pid)
+        missing_weeks_dict[weeks_missing['Out']]['Out'].append(pid)
+
+    return missing_weeks_dict, per_week_msgs

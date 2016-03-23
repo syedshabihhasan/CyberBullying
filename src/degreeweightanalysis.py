@@ -3,7 +3,6 @@ import os
 import helper as hlp
 from basicInfo import exceptionstrings as e
 from basicInfo import privateInfo as pr
-from basicInfo import surveyInfo as sr
 from filterByField import filterfields
 from graphhelper import ghelper
 from plothelper import plots
@@ -14,7 +13,6 @@ def getfilterdata(filters_chosen, filter_files, cumulative_list=False, catch_all
     data = {}
     cumulative_pid_list = []
     catch_all_data = {}
-    anchor_date = None
     for idx in range(len(filters_chosen)):
         loaded_data = hlp.recovervariable(filter_files[idx])
         temp = []
@@ -76,7 +74,12 @@ def main():
 
     # get the filtered messages
     ff = filterfields(message_file)
-    filtered_data = ff.filterbyequality(pr.m_type, message_type)
+    filtered_data = []
+    if message_type == 'all':
+        for message_type in ['sms', 'fb', 'twitter']:
+            filtered_data.extend(ff.filterbyequality(pr.m_type, message_type))
+    else:
+        filtered_data = ff.filterbyequality(pr.m_type, message_type)
 
     # generate the links and the graph for the filtered data
     links, links_tuple, graph_obj, pid_dict = hlp.creategraph(filtered_data, filterType=message_type)
@@ -110,14 +113,14 @@ def main():
 
 
     # line plot of degrees
-    weekly_dist_degrees, ignore_me= gh.getweeklydistributions(pid_dict, filtered_data,
+    weekly_dist_degrees, _ = gh.getweeklydistributions(pid_dict, filtered_data,
                                                     message_type=message_type,
                                                     is_degree=True, week_info=week_info)
     overlay_info = gh.createbullyingoverlay(catch_all_data, week_info, ff)
     plt.plotweeklyprogression(weekly_dist_degrees, location_to_store+'deg_', 'No of friends',
                               'Week No', 'Friends', overlay_date=overlay_info)
     # line plot of weights
-    weekly_dist_ew, ignore_me = gh.getweeklydistributions(pid_dict, filtered_data,
+    weekly_dist_ew, _ = gh.getweeklydistributions(pid_dict, filtered_data,
                                                     message_type=message_type,
                                                     is_degree=False, week_info=week_info)
     overlay_info = gh.createbullyingoverlay(catch_all_data, week_info, ff)

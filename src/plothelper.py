@@ -5,8 +5,8 @@ import helper as hlp
 from math import ceil
 from basicInfo import plottingdetails as plt_details
 
-class plots:
 
+class plots:
     def superimposebullyingdata(self, to_superimpose, axis, data):
         for category in to_superimpose.keys():
             if [] is not to_superimpose[category]:
@@ -35,25 +35,25 @@ class plots:
                 p_data_in.append(p_dict[week_no][0])
                 p_data_out.append(p_dict[week_no][1])
             fig, axes = plt.subplots(2, 1, sharex=True, sharey=True)
-            axes[0].plot(range(1, len(p_data_in)+1), p_data_in,
-                    'ko-', linewidth=2, label='In', alpha=0.5)
-            axes[1].plot(range(1, len(p_data_out)+1), p_data_out,
-                    'bo-', linewidth=2, label='Out', alpha=0.5)
+            axes[0].plot(range(1, len(p_data_in) + 1), p_data_in,
+                         'ko-', linewidth=2, label='In', alpha=0.5)
+            axes[1].plot(range(1, len(p_data_out) + 1), p_data_out,
+                         'bo-', linewidth=2, label='Out', alpha=0.5)
             if to_superimpose:
                 axes[0] = self.superimposebullyingdata(to_superimpose, axes[0], p_data_in)
                 axes[1] = self.superimposebullyingdata(to_superimpose, axes[1], p_data_out)
-            plt.suptitle(title + '('+pid+')')
+            plt.suptitle(title + '(' + pid + ')')
             plt.xlabel(x_label)
             plt.ylabel(y_label)
             art = []
             for ax in axes:
                 ax.set_xlabel(x_label)
                 ax.set_ylabel(y_label)
-                ax.set_xticks(np.arange(0, max(week_list)+1, 2))
+                ax.set_xticks(np.arange(0, max(week_list) + 1, 2))
                 lgd = ax.legend(loc=2, bbox_to_anchor=(1.05, 1))
                 art.append(lgd)
                 ax.grid(True)
-            plt.savefig(location_to_store+pid+'.pdf', additional_artists=art, bbox_inches='tight')
+            plt.savefig(location_to_store + pid + '.pdf', additional_artists=art, bbox_inches='tight')
             plt.close(fig)
 
     def generatetablehist(self, input_dictionary, file_path, generate_totals=False, bin_dist=-1):
@@ -61,18 +61,18 @@ class plots:
         bin_dist = 5 if -1 == bin_dist else bin_dist
         for key in input_dictionary.keys():
             max_value = max(input_dictionary[key]) if max(input_dictionary[key]) > max_value else max_value
-        max_value = int(ceil(max_value/bin_dist)*bin_dist)
-        bins = range(0, max_value+1, bin_dist)
+        max_value = int(ceil(max_value / bin_dist) * bin_dist)
+        bins = range(0, max_value + 1, bin_dist)
         print 'bins: ', bins, 'max:', max_value
         first_line = ['category']
         for idx in range(1, len(bins)):
-            first_line.append(str(bins[idx-1]) + ' to ' + str(bins[idx]))
+            first_line.append(str(bins[idx - 1]) + ' to ' + str(bins[idx]))
         if generate_totals:
             first_line.append('no. of people')
         final_to_write = [first_line]
         for key in input_dictionary.keys():
             h, be = np.histogram(input_dictionary[key], bins, range=(0, max_value))
-            h = h/sum(h)
+            h = h / sum(h)
             if generate_totals:
                 final_to_write.append([key] + h.tolist() + [len(input_dictionary[key])])
             else:
@@ -100,4 +100,4 @@ class plots:
         plt.savefig(to_store_at)
 
     def __init__(self):
-        return
+        pass

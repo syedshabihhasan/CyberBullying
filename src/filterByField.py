@@ -73,7 +73,7 @@ class filterfields:
     def filterbyequality(self, field_no, to_equate):
         filtered_data = []
         for data_row in self.data:
-            if to_equate in data_row[field_no]:
+            if to_equate in data_row[field_no].lower():
                 filtered_data.append(data_row)
         print 'Original data: ', len(self.data), ' filtered data:', len(filtered_data)
         return filtered_data
