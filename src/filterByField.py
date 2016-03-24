@@ -70,6 +70,16 @@ class filterfields:
         f.close()
         return temp_data
 
+    def replacebyequality(self, field_no, to_equate, to_replace_with):
+        replacements = 0
+        for idx in range(len(self.data)):
+            if to_equate in self.data[idx][field_no].lower():
+                self.data[idx][field_no] = to_replace_with
+                replacements += 1
+        print 'Number of replacements: ', replacements
+        return replacements
+
+
     def filterbyequality(self, field_no, to_equate):
         filtered_data = []
         for data_row in self.data:

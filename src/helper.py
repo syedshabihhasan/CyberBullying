@@ -6,6 +6,7 @@ import csv
 from basicInfo import privateInfo as pr
 from graphing import creategraph as graph
 
+
 def writecsv(data, filepath, delimiter_sym=','):
     print 'writing csv'
     f = open(filepath, 'w')
@@ -40,7 +41,7 @@ def recovervariable(fname):
 
 
 def getuniqueparticipants(data, mtype='sms'):
-    #TODO: the participant/nonparticipant thing looks ugly. try cleaning.
+    # TODO: the participant/nonparticipant thing looks ugly. try cleaning.
     pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}} \
         if mtype != 'all' \
         else {'participant': {}, 'nonparticipant': {}}
@@ -177,7 +178,7 @@ def removekey(v_dict, key):
 
 def creategraph(data, isStatic=True, filterType='sms', graph_directed=True, pid_dict=None):
     pid_dict = getuniqueparticipants(data, filterType) if None is pid_dict else pid_dict
-    graph_obj = graph(is_directed=graph_directed, is_multigraph= filterType == 'all')
+    graph_obj = graph(is_directed=graph_directed, is_multigraph=filterType == 'all')
     if isStatic:
         ignore_mtype = filterType != 'all'
         links, link_tuple = getlinks(pid_dict, data, ignore_mtype)
@@ -192,11 +193,12 @@ def creategraph(data, isStatic=True, filterType='sms', graph_directed=True, pid_
         to_write_edge, to_write_node = graph_obj.exportdynamicgraph(link_tuple, pid_dict)
         return to_write_edge, to_write_node, week_dict, pid_dict, week_content
 
-def missingweeks(data, threshold_value = 0):
+
+def missingweeks(data, threshold_value=0):
     no_of_weeks = max(data[data.keys()[0]].keys())
     per_week_msgs = {'In': [], 'Out': []}
     missing_weeks_dict = {}
-    for idx in range(no_of_weeks+1):
+    for idx in range(no_of_weeks + 1):
         temp = {'In': [], 'Out': []}
         missing_weeks_dict[idx] = temp
 
@@ -214,3 +216,32 @@ def missingweeks(data, threshold_value = 0):
         missing_weeks_dict[weeks_missing['Out']]['Out'].append(pid)
 
     return missing_weeks_dict, per_week_msgs
+
+
+def getfilterdata(filters_chosen, filter_files, cumulative_list=False, catch_all=False):
+    data = {}
+    cumulative_pid_list = []
+    catch_all_data = {}
+    for idx in range(len(filters_chosen)):
+        loaded_data = recovervariable(filter_files[idx])
+        catch_all_data[filters_chosen[idx]] = {}
+        temp = []
+        for key in loaded_data.keys():
+            temp += loaded_data[key].keys()
+            category_data = loaded_data[key]
+            for pid in category_data.keys():
+                if pid not in catch_all_data[filters_chosen[idx]]:
+                    catch_all_data[filters_chosen[idx]][pid] = category_data[pid]
+                else:
+                    for sno in category_data[pid].keys():
+                        if sno not in catch_all_data[filters_chosen[idx]][pid]:
+                            catch_all_data[filters_chosen[idx]][pid][sno] = category_data[pid][sno]
+        data[filters_chosen[idx]] = temp
+        # catch_all_data[filters_chosen[idx]] = loaded_data[key]
+        cumulative_pid_list += temp
+    if cumulative_list:
+        return cumulative_pid_list
+    elif catch_all:
+        return catch_all_data
+    else:
+        return data

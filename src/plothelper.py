@@ -14,31 +14,51 @@ class plots:
                 i = True
                 for weekno in week_list:
                     axis.axvline(x=weekno, ymin=plt_details.vline_ymin[category], ymax=plt_details.vline_ymax[category],
-                                 linewidth=2, color=plt_details.bullying_category_markers[category],
+                                 linewidth=4, color=plt_details.bullying_category_markers[category],
                                  label=category if i else '')
                     i = False
         return axis
 
     def plotweeklyprogression(self, weekly_dict, location_to_store, title,
-                              x_label, y_label, overlay_date=None):
+                              x_label, y_label, overlay_data=None, sentiment_legend=None):
+        print 'Plotting weekly progression...'
+        c_scheme = ['go-', 'ro-', 'ko-']
         for pid in weekly_dict.keys():
             p_dict = weekly_dict[pid]
             to_superimpose = {}
-            if overlay_date is not None:
-                if pid in overlay_date.keys():
-                    to_superimpose = overlay_date[pid]
+            if overlay_data is not None:
+                if pid in overlay_data.keys():
+                    to_superimpose = overlay_data[pid]
             week_list = p_dict.keys()
             week_list.sort()
-            p_data_in = []
-            p_data_out = []
+            p_data_in = [] if sentiment_legend is None else [[], [], []]
+            p_data_out = [] if sentiment_legend is None else [[], [], []]
             for week_no in week_list:
-                p_data_in.append(p_dict[week_no][0])
-                p_data_out.append(p_dict[week_no][1])
+                if sentiment_legend == None:
+                    p_data_in.append(p_dict[week_no][0])
+                    p_data_out.append(p_dict[week_no][1])
+                else:
+                    for idx in range(3):
+                        p_data_in[idx].append(p_dict[week_no][0][idx])
+                        p_data_out[idx].append(p_dict[week_no][1][idx])
             fig, axes = plt.subplots(2, 1, sharex=True, sharey=True)
-            axes[0].plot(range(1, len(p_data_in) + 1), p_data_in,
-                         'ko-', linewidth=2, label='In', alpha=0.5)
-            axes[1].plot(range(1, len(p_data_out) + 1), p_data_out,
-                         'bo-', linewidth=2, label='Out', alpha=0.5)
+            if sentiment_legend is not None:
+                for idx in range(3):
+                    axes[0].plot(range(1, len(week_list) + 1), p_data_in[idx],
+                                 c_scheme[idx], linewidth=2, alpha=0.5, label=sentiment_legend[idx])
+                    axes[0].set_title('Incoming')
+                    axes[1].plot(range(1, len(week_list) + 1), p_data_out[idx],
+                                 c_scheme[idx], linewidth=2, alpha=0.5, label=sentiment_legend[idx])
+                    axes[1].set_title('Outgoing')
+                # axes[0].plot(range(1, len(week_list) + 1), p_data_in,
+                #              'o-', linewidth=2, alpha=0.5)
+                # axes[1].plot(range(1, len(week_list) + 1), p_data_out,
+                #              'o-', linewidth=2, alpha=0.5)
+            else:
+                axes[0].plot(range(1, len(p_data_in) + 1), p_data_in,
+                             'ko-', linewidth=2, label='In', alpha=0.5)
+                axes[1].plot(range(1, len(p_data_out) + 1), p_data_out,
+                             'bo-', linewidth=2, label='Out', alpha=0.5)
             if to_superimpose:
                 axes[0] = self.superimposebullyingdata(to_superimpose, axes[0], p_data_in)
                 axes[1] = self.superimposebullyingdata(to_superimpose, axes[1], p_data_out)

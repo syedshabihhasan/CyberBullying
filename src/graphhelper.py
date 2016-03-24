@@ -6,7 +6,6 @@ import datetime as dt
 
 
 class ghelper:
-
     def liesinweeks(self, date_to_check, week_info):
         curr_start = date_to_check - dt.timedelta(days=7)
         curr_start = curr_start.replace(hour=0, minute=0, second=0)
@@ -39,7 +38,6 @@ class ghelper:
                 to_return.add(weekno)
         return list(to_return)
 
-
     def createbullyingoverlay(self, catch_all_data, week_info, ff_obj):
         bullying_overlay = {}
         for category in catch_all_data.keys():
@@ -63,9 +61,9 @@ class ghelper:
         curr_min = dt.datetime.max
         curr_max = dt.datetime.min
         for datum in message_data:
-                to_consider_date = ff_obj.converttodate(datum[pr.m_time_sent])
-                curr_min = to_consider_date if to_consider_date < curr_min else curr_min
-                curr_max = to_consider_date if to_consider_date > curr_max else curr_max
+            to_consider_date = ff_obj.converttodate(datum[pr.m_time_sent])
+            curr_min = to_consider_date if to_consider_date < curr_min else curr_min
+            curr_max = to_consider_date if to_consider_date > curr_max else curr_max
         return curr_min, curr_max
 
     def __weeklygraphs(self, weekly_dict, pid_dict, message_type='sms'):
@@ -114,6 +112,20 @@ class ghelper:
             return weekly_data, week_info
         else:
             return weekly_data
+
+    def filterweeklydata(self, pid_dict, message_list, week_info, message_type='sms'):
+        participant_dict = pid_dict[pr.participant[message_type]]
+        ff_obj = filterfields('')
+        ff_obj.setdata(message_list)
+        min_week = min(week_info.keys())
+        max_week = max(week_info.keys())
+        min_date = week_info[min_week][0]
+        max_date = week_info[max_week][1]
+        weekly_dist = {}
+        for pid in participant_dict.keys():
+            weekly_dist[pid] = self.__perparticipantprocessing(pid, ff_obj, curr_min=min_date, curr_max=max_date,
+                                                               send_week_info=False, week_info=week_info)
+        return weekly_dist
 
     def getweeklydistributions(self, pid_dict, message_list, message_type='sms',
                                is_degree=True, week_info=None):
@@ -215,4 +227,4 @@ class ghelper:
         return deg_dist
 
     def __init__(self):
-        return
+        pass
