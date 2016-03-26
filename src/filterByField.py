@@ -88,5 +88,14 @@ class filterfields:
         print 'Original data: ', len(self.data), ' filtered data:', len(filtered_data)
         return filtered_data
 
+    def getuniqueelements(self, field_no):
+        unique_elements = set()
+        for data_row in self.data:
+            unique_elements.add(data_row[field_no])
+        return list(unique_elements)
+
+    def getdata(self):
+        return self.data
+
     def __init__(self, fname=''):
         self.data = self.__readfile(fname)
