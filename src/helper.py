@@ -40,30 +40,41 @@ def recovervariable(fname):
     return pickle.load(open(fname, 'rb'))
 
 
-def getuniqueparticipants(data, mtype='sms'):
-    # TODO: the participant/nonparticipant thing looks ugly. try cleaning.
+def getuniqueparticipants(data, mtype='sms', separate_pid_npid = False):
     pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}} \
         if mtype != 'all' \
         else {'participant': {}, 'nonparticipant': {}}
-    pid = 1
+    pid = 1 if not separate_pid_npid else [1, 1]
+    p_np = -1
     for datum in data:
+        #TODO: change the current to reflect the right option according to the message type in the datum
         if 'None' == datum[pr.m_source_type]:
             datum[pr.m_source_type] = 'facebook' if mtype == 'fb' else 'twitter'
-
         if 'None' == datum[pr.m_target_type]:
             datum[pr.m_target_type] = 'facebook' if mtype == 'fb' else 'twitter'
 
         if mtype == 'all':
             if datum[pr.m_source_type] in pid_dict:
                 temp = pid_dict['participant']
+                p_np = 0
             else:
                 temp = pid_dict['nonparticipant']
+                p_np = 1
         else:
             temp = pid_dict[pr.src_dst_maps[datum[pr.m_source_type]]]
 
         if datum[pr.m_source] not in temp:
-            temp[datum[pr.m_source]] = pid
-            pid += 1
+            if not separate_pid_npid:
+                temp[datum[pr.m_source]] = pid
+                pid += 1
+            else:
+                if p_np == 0:
+                    temp[datum[pr.m_source]] = 'P' + str(pid[0])
+                    pid[0] += 1
+                else:
+                    temp[datum[pr.m_source]] = 'NP' + str(pid[1])
+                    pid[1] += 1
+                p_np = -1
             if mtype == 'all':
                 if datum[pr.m_source_type] in pid_dict:
                     pid_dict['participant'] = temp
@@ -75,14 +86,25 @@ def getuniqueparticipants(data, mtype='sms'):
         if mtype == 'all':
             if datum[pr.m_target_type] in pid_dict:
                 temp = pid_dict['participant']
+                p_np = 0
             else:
                 temp = pid_dict['nonparticipant']
+                p_np = 1
         else:
             temp = pid_dict[pr.src_dst_maps[datum[pr.m_target_type]]]
 
         if datum[pr.m_target] not in temp:
-            temp[datum[pr.m_target]] = pid
-            pid += 1
+            if not separate_pid_npid:
+                temp[datum[pr.m_target]] = pid
+                pid += 1
+            else:
+                if p_np == 0:
+                    temp[datum[pr.m_target]] = 'P' + str(pid[0])
+                    pid[0] += 1
+                else:
+                    temp[datum[pr.m_target]] = 'NP' + str(pid[1])
+                    pid[1] += 1
+                p_np = -1
             if mtype == 'all':
                 if datum[pr.m_target_type] in pid_dict:
                     pid_dict['participant'] = temp

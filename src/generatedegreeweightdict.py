@@ -35,7 +35,7 @@ def main():
     ff = filterfields(message_file)
     filtered_data = []
     if m_type == 'all':
-        for message_type in ['sms', 'fb', 'twitter']:
+        for message_type in ['sms', 'fb_message']:
             filtered_data.extend(ff.filterbyequality(pr.m_type, message_type))
     else:
         filtered_data = ff.filterbyequality(pr.m_type, m_type)

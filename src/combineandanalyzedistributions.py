@@ -3,6 +3,21 @@ import argparse
 import helper as hlp
 import numpy as np
 
+def flipdict(missing_week_dict):
+    flipped_dict = {}
+    for week_no in missing_week_dict.keys():
+        incoming = missing_week_dict[week_no]['In']
+        outgoing = missing_week_dict[week_no]['Out']
+        for pid in incoming:
+            if pid not in flipped_dict:
+                flipped_dict[pid] = [-1, -1]
+            flipped_dict[pid][0] = week_no
+        for pid in outgoing:
+            if pid not in flipped_dict:
+                flipped_dict[pid] = [-1, -1]
+            flipped_dict[pid][1] = week_no
+    return flipped_dict
+
 def printsummary(data_dict, tag_line, total_participants, per_week_msgs):
     print '***Summary starts***'
     print 'IN per week: Avg=', np.mean(per_week_msgs['In']), ' Median', np.median(per_week_msgs['In']), \
@@ -49,8 +64,10 @@ def main():
     data = hlp.recovervariable(filename)
 
     missing_week_dict, per_week_msgs = hlp.missingweeks(data, threshold_value=threshold_missing)
+    flipped_dict = flipdict(missing_week_dict)
     printsummary(missing_week_dict, 'No. of participants with less than '+
                  str(threshold_missing)+' data points in ', len(data.keys()), per_week_msgs)
     hlp.dumpvariable(missing_week_dict, filepath, location_to_store)
+    hlp.dumpvariable(flipped_dict, 'flipped_'+filepath, location_to_store)
 if __name__ == "__main__":
     main()

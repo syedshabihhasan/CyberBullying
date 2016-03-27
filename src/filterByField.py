@@ -70,6 +70,13 @@ class filterfields:
         f.close()
         return temp_data
 
+    def removebyequality(self, field_no, to_equate):
+        data_to_replace_with = []
+        for idx in range(len(self.data)):
+            if to_equate not in self.data[idx][field_no].lower():
+                data_to_replace_with.append(self.data[idx])
+        self.setdata(data_to_replace_with)
+
     def replacebyequality(self, field_no, to_equate, to_replace_with):
         replacements = 0
         for idx in range(len(self.data)):
