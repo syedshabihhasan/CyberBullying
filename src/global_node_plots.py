@@ -54,8 +54,35 @@ def setboxcolors(color_v, box_obj):
             plt.setp(box_obj[chng], linewidth=1)
     return box_obj
 
+def plotbar_frac(pid_list, pos_senti, neu_senti, neg_senti, location_to_store, title_v=''):
+    fig, ax = plt.subplots()
+    ind = np.arange(len(pid_list)) * 2
+    xtick_position = ind + 0.45
+    width = 0.3
+
+    pos_color = converttableaucolor(pld.tableau20[0])
+    neu_color = converttableaucolor(pld.tableau20[2])
+    neg_color = converttableaucolor(pld.tableau20[4])
+
+    ax.bar(ind, pos_senti, width=width, color=pos_color)
+    ax.bar(ind+0.3, neu_senti, width=width, color=neu_color)
+    ax.bar(ind+0.6, neg_senti, width=width, color=neg_color)
+
+
+    plt.xticks(xtick_position, pid_list, fontsize=8, rotation='vertical')
+    plt.xlabel('Participant ID')
+    plt.ylabel('Fraction of Messages')
+    ax.legend(['Positive', 'Neutral', 'Negative'], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    plt.yticks(np.arange(0, 1.1, 0.05))
+    ax.set_ylim(-0.01, 1.01)
+    ax.yaxis.grid(True)
+    plt.title(title_v)
+    plt.savefig(location_to_store, bbox_inches='tight')
+
+
 def plotbar(pid_list, pos_senti, neu_senti, neg_senti, location_to_store,
-            upper_lim=[6000, 18000], lower_lim=[0, 3000], upper_skip=2000, lower_skip=200):
+            upper_lim=[6000, 18000], lower_lim=[0, 3000], upper_skip=2000, lower_skip=200,
+            title_v=''):
     fig, (ax_upper, ax_lower) = plt.subplots(2,1, sharex=True)
     ind = np.arange(len(pid_list)) * 2
     xtick_position = ind + 0.45
@@ -82,7 +109,7 @@ def plotbar(pid_list, pos_senti, neu_senti, neg_senti, location_to_store,
     ax_upper.tick_params(labeltop='off')
     ax_lower.xaxis.tick_bottom()
 
-    ax_upper.legend(['Positive', 'Neutral', 'Negative'], loc=9, mode='expand', ncol=3, bbox_to_anchor=(0., 1.05, 1., .102))
+    ax_upper.legend(['Positive', 'Neutral', 'Negative'], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     plt.xticks(xtick_position, pid_list, fontsize=8, rotation='vertical')
     plt.xlabel('Participant ID')
     plt.ylabel('# of Messages')
@@ -92,10 +119,11 @@ def plotbar(pid_list, pos_senti, neu_senti, neg_senti, location_to_store,
 
     ax_upper.yaxis.grid(True)
     ax_lower.yaxis.grid(True)
-    plt.savefig(location_to_store)
+    plt.suptitle(title_v)
+    plt.savefig(location_to_store, bbox_inches='tight')
 
 
-def plotbox(pid_list, pos_senti, neu_senti, neg_senti, location_to_store):
+def plotbox(pid_list, pos_senti, neu_senti, neg_senti, location_to_store, title_v=''):
     pos_labels = ['' for d in pos_senti]
     pos_labels[0] = 'Positive'
     neu_labels = ['' for d in neu_senti]
@@ -127,7 +155,7 @@ def plotbox(pid_list, pos_senti, neu_senti, neg_senti, location_to_store):
     h2 = plt.plot([0,0], color=neu_color, linestyle='-', label='Neutral')
     h3 = plt.plot([0,0], color=neg_color, linestyle='-', label='Negative')
 
-    plt.legend(loc=9, mode='expand', ncol=3, bbox_to_anchor=(0., 1.02, 1., .102))
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     plt.xlabel('Participant ID', fontsize=20)
     plt.ylabel('Sentiment', fontsize=20)
     plt.xlim(xmin=-1)
@@ -135,7 +163,8 @@ def plotbox(pid_list, pos_senti, neu_senti, neg_senti, location_to_store):
     # plt.yticks(range(0, 1.1, 0.1))
     plt.ylim((-0.01, 1.01))
     ax.yaxis.grid(True)
-    plt.savefig(location_to_store)
+    plt.title(title_v)
+    plt.savefig(location_to_store, bbox_inches='tight')
     # plt.show()
 
 
@@ -175,12 +204,14 @@ def main():
     pos_count = []
     neu_count = []
     neg_count = []
+    all_count = []
 
     for pid in participant_list:
         pid_data = ff.filterbyequality(pr.m_source, participant_dict[pid]) + \
                    ff.filterbyequality(pr.m_target, participant_dict[pid])
         p, u, n = separatesentiment(pid, pid_data)
         counts = separatesentiment(pid, pid_data, output_count=True)
+        all_count.append(sum(counts)+0.0)
         pos_senti.append(p)
         neu_senti.append(u)
         neg_senti.append(n)
@@ -188,8 +219,12 @@ def main():
         neu_count.append(counts[1])
         neg_count.append(counts[2])
 
-    plotbox(participant_list, pos_senti, neu_senti, neg_senti, output_folder+'box_'+output_file)
-    plotbar(participant_list, pos_count, neu_count, neg_count, output_folder+'bar_'+output_file)
+    plotbox(participant_list, pos_senti, neu_senti, neg_senti, output_folder+'box_'+output_file, title_v='Overall Sentiment Box')
+    plotbar(participant_list, pos_count, neu_count, neg_count, output_folder+'bar_'+output_file, title_v='Overall Sentiment Bar')
+    plotbar_frac(participant_list, np.array(pos_count)/np.array(all_count),
+                 np.array(neu_count)/np.array(all_count),
+                 np.array(neg_count)/np.array(all_count),
+                 output_folder+'bar_frac_'+output_file, title_v='Overall Sentiment Fraction')
 
     in_neg_count = None
     out_neg_count = None
@@ -201,11 +236,13 @@ def main():
     pos_count = []
     neu_count = []
     neg_count = []
+    all_count = []
 
     for pid in participant_list:
         pid_data = ff.filterbyequality(pr.m_source, participant_dict[pid])
         p, u, n = separatesentiment(pid, pid_data)
         counts = separatesentiment(pid, pid_data, output_count=True)
+        all_count.append(sum(counts)+0.0)
         pos_senti.append(p)
         neu_senti.append(u)
         neg_senti.append(n)
@@ -214,9 +251,13 @@ def main():
         neg_count.append(counts[2])
 
     out_neg_count = neg_count
-    plotbox(participant_list, pos_senti, neu_senti, neg_senti, output_folder+'out_box_'+output_file)
+    plotbox(participant_list, pos_senti, neu_senti, neg_senti, output_folder+'out_box_'+output_file, title_v='Outgoing Sentiment Box')
     plotbar(participant_list, pos_count, neu_count, neg_count, output_folder+'out_bar_'+output_file,
-            [2500, 10000], [0, 1600], 1000, 100)
+            [2500, 10000], [0, 1600], 1000, 100, title_v='Outgoing Sentiment Bar')
+    plotbar_frac(participant_list, np.array(pos_count)/np.array(all_count),
+                 np.array(neu_count)/np.array(all_count),
+                 np.array(neg_count)/np.array(all_count),
+                 output_folder+'out_bar_frac_'+output_file, title_v='Outgoing Sentiment Fraction')
 
     #incoming
     pos_senti = []
@@ -225,11 +266,13 @@ def main():
     pos_count = []
     neu_count = []
     neg_count = []
+    all_count = []
 
     for pid in participant_list:
         pid_data = ff.filterbyequality(pr.m_target, participant_dict[pid])
         p, u, n = separatesentiment(pid, pid_data)
         counts = separatesentiment(pid, pid_data, output_count=True)
+        all_count.append(sum(counts)+0.0)
         pos_senti.append(p)
         neu_senti.append(u)
         neg_senti.append(n)
@@ -238,6 +281,13 @@ def main():
         neg_count.append(counts[2])
 
     in_neg_count = neg_count
+    plotbox(participant_list, pos_senti, neu_senti, neg_senti, output_folder+'in_box_'+output_file, title_v='Incoming Sentiment Box')
+    plotbar(participant_list, pos_count, neu_count, neg_count, output_folder+'in_bar_'+output_file, [3000, 8000],
+            [0, 1300], 1000, 100, title_v='Incoming Sentiment Bar')
+    plotbar_frac(participant_list, np.array(pos_count)/np.array(all_count),
+                 np.array(neu_count)/np.array(all_count),
+                 np.array(neg_count)/np.array(all_count),
+                 output_folder+'in_bar_frac_'+output_file, title_v='Incoming Sentiment Fraction')
 
     for idx in range(len(in_neg_count)):
         total_neg = in_neg_count[idx]+out_neg_count[idx]+0.0
@@ -247,9 +297,6 @@ def main():
     t, p = stats.ttest_rel(in_neg_count, out_neg_count)
     w, p_w = stats.wilcoxon(in_neg_count, out_neg_count)
 
-    plotbox(participant_list, pos_senti, neu_senti, neg_senti, output_folder+'in_box_'+output_file)
-    plotbar(participant_list, pos_count, neu_count, neg_count, output_folder+'in_bar_'+output_file, [3000, 8000],
-            [0, 1300], 1000, 100)
 
     hlp.dumpvariable({'pos': pos_senti, 'neg': neg_senti, 'neu': neu_senti},
                      'senti_vals.dict', output_folder)
