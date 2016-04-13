@@ -7,6 +7,7 @@ from createweeklyinfo import weeklyinfo
 from graphhelper import ghelper
 from plothelper import plots
 
+
 def main():
     parser = argparse.ArgumentParser('Script to perform sentiment analysis using VADER')
 
@@ -16,7 +17,7 @@ def main():
                         help='types of messages to filter')
     parser.add_argument('-f', '-F', type=str, required=True,
                         help='filename where data is stored, no extension needed')
-    parser.add_argument('-s','-S', type=str, required=True,
+    parser.add_argument('-s', '-S', type=str, required=True,
                         help='location of folder to store the file, ends with a /')
     parser.add_argument('-p', '-P', action='store_true',
                         help='flag to store polarities separately')
@@ -27,7 +28,6 @@ def main():
                         help='the filters to use, make one or more choices: seenB, wasB, didB')
     parser.add_argument('-lf', '-LF', type=str, nargs='+', required=True,
                         help='location of filtered data, from runSurveyStats.py, in same order as -l/L flag')
-
 
     args = parser.parse_args()
     message_file = args.m
@@ -58,7 +58,7 @@ def main():
     sentiment_analyzer = vadersenti(data[1:])
     returned_data = sentiment_analyzer.compilesentiment(pr.m_content, separate_sentiment_list=separate_polarity_score)
     if separate_polarity_score:
-        hlp.dumpvariable(returned_data, filename_to_store+'.data', location_to_store)
+        hlp.dumpvariable(returned_data, filename_to_store + '.data', location_to_store)
     else:
         header = pr.message_header + ['pos', 'neg', 'neu', 'compound']
         final_data = [header] + returned_data
@@ -82,6 +82,7 @@ def main():
                                   overlay_data=overlay_data)
 
     print 'done'
+
 
 if __name__ == "__main__":
     main()
