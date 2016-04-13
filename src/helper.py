@@ -16,9 +16,9 @@ def writecsv(data, filepath, delimiter_sym=','):
     print 'done'
 
 
-def readcsv(filepath, delimiter_sym=','):
+def readcsv(filepath, delimiter_sym=',', universal_read=False):
     print 'reading csv'
-    f = open(filepath, 'r')
+    f = open(filepath, 'rU' if universal_read else 'r')
     csv_obj = csv.reader(f, delimiter=delimiter_sym)
     data = []
     for row in csv_obj:
