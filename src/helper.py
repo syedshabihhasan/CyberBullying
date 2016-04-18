@@ -40,14 +40,40 @@ def recovervariable(fname):
     return pickle.load(open(fname, 'rb'))
 
 
-def getuniqueparticipants(data, mtype='sms', separate_pid_npid = False):
+def getuniqueparticipants2(data):
+    pid_dict = {'participants': {}, 'nonparticipants': {}}
+    pid = 1
+    for datum in data:
+        # look at source
+        if 'participant' == datum[pr.m_source_type].lower():
+            if datum[pr.m_source] not in pid_dict['participants']:
+                pid_dict['participants'][datum[pr.m_source]] = pid
+                pid += 1
+        else:
+            if datum[pr.m_source] not in pid_dict['nonparticipants']:
+                pid_dict['nonparticipants'][datum[pr.m_source]] = pid
+                pid += 1
+
+        # look at target
+        if 'participant' == datum[pr.m_target_type].lower():
+            if datum[pr.m_target] not in pid_dict['participants']:
+                pid_dict['participants'][datum[pr.m_target]] = pid
+                pid += 1
+        else:
+            if datum[pr.m_target] not in pid_dict['nonparticipants']:
+                pid_dict['nonparticipants'][datum[pr.m_target]] = pid
+                pid += 1
+    return pid_dict
+
+
+def getuniqueparticipants(data, mtype='sms', separate_pid_npid=False):
     pid_dict = {pr.participant[mtype]: {}, pr.nparticipant[mtype]: {}} \
         if mtype != 'all' \
         else {'participant': {}, 'nonparticipant': {}}
     pid = 1 if not separate_pid_npid else [1, 1]
     p_np = -1
     for datum in data:
-        #TODO: change the current to reflect the right option according to the message type in the datum
+        # TODO: change the current to reflect the right option according to the message type in the datum
         if 'None' == datum[pr.m_source_type]:
             datum[pr.m_source_type] = 'facebook' if mtype == 'fb' else 'twitter'
         if 'None' == datum[pr.m_target_type]:
@@ -275,3 +301,82 @@ def divideintoweekly(all_data, weekly_info, ff):
         (start_date, end_date) = weekly_info[week_no]
         divided_data[week_no] = ff.filterbetweendates(start_date, end_date, data_to_work=all_data, right_equality=True)
     return divided_data
+
+
+def processvadersentiment(data, label_only=True):
+    label = []
+    new_data = []
+    for datum in data:
+        pos = datum[pr.m_pos]
+        neu = datum[pr.m_neu]
+        neg = datum[pr.m_neg]
+        if pos > neu:
+            if pos > neg:
+                label.append('P')
+                temp = datum[0:pr.m_pos]
+                temp.append('P')
+                new_data.append(temp)
+            else:
+                label.append('N')
+                temp = datum[0:pr.m_pos]
+                temp.append('N')
+                new_data.append(temp)
+        else:
+            if neg > neu:
+                label.append('N')
+                temp = datum[0:pr.m_pos]
+                temp.append('N')
+                new_data.append(temp)
+            else:
+                label.append('U')
+                temp = datum[0:pr.m_pos]
+                temp.append('U')
+                new_data.append(temp)
+    return label if label_only else new_data
+
+
+def processafinnsentiment(data, neutral_threshold=None, label_only=False):
+    label = []
+    new_data = []
+    if neutral_threshold is None:
+        for datum in data:
+            if datum[pr.m_afinn_label] == '-1':
+                label.append('N')
+                temp = datum[0:pr.m_afinn_score]
+                temp.append('N')
+                new_data.append(temp)
+            elif datum[pr.m_afinn_label] == '0':
+                label.append('U')
+                temp = datum[0:pr.m_afinn_score]
+                temp.append('U')
+                new_data.append(temp)
+            elif datum[pr.m_afinn_label] == '1':
+                label.append('P')
+                temp = datum[0:pr.m_afinn_score]
+                temp.append('P')
+                new_data.append(temp)
+    else:
+        for datum in data:
+            if int(datum[pr.m_afinn_score]) < neutral_threshold[0]:
+                label.append('N')
+                temp = datum[0:pr.m_afinn_score]
+                temp.append('N')
+                new_data.append(temp)
+            elif int(datum[pr.m_afinn_score]) > neutral_threshold[1]:
+                label.append('P')
+                temp = datum[0:pr.m_afinn_score]
+                temp.append('P')
+                new_data.append(temp)
+            else:
+                label.append('U')
+                temp = datum[0:pr.m_afinn_score]
+                temp.append('U')
+                new_data.append(temp)
+    return label if label_only else new_data
+
+
+def flip_dict(ip_dict):
+    return {v: k for (k, v) in ip_dict.iteritems()}
+
+def convert_to_date(date_string, date_fmt = '%Y-%m-%d %H:%M:%S'):
+    return dt.datetime.strptime(date_string, date_fmt)

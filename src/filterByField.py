@@ -87,17 +87,19 @@ class filterfields:
         return replacements
 
 
-    def filterbyequality(self, field_no, to_equate):
+    def filterbyequality(self, field_no, to_equate, data=None):
         filtered_data = []
-        for data_row in self.data:
+        data = self.data if data is None else data
+        for data_row in data:
             if to_equate in data_row[field_no].lower():
                 filtered_data.append(data_row)
-        print 'Original data: ', len(self.data), ' filtered data:', len(filtered_data)
+        print 'Original data: ', len(data), ' filtered data:', len(filtered_data)
         return filtered_data
 
-    def getuniqueelements(self, field_no):
+    def getuniqueelements(self, field_no, data=None):
+        data = self.data if data is None else data
         unique_elements = set()
-        for data_row in self.data:
+        for data_row in data:
             unique_elements.add(data_row[field_no])
         return list(unique_elements)
 

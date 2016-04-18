@@ -7,7 +7,7 @@ class creategraph:
     is_multigraph = None
 
     def drawgraph(self):
-        nx.draw(self.G)
+        nx.draw_circular(self.G)
         plt.show()
 
     def __getmultigraphdegrees(self, node_id):
@@ -15,6 +15,26 @@ class creategraph:
 
     def __getmultigraphedgeweights(self, node_id):
         pass
+
+    def get_edge_data(self, node1, node2):
+        return self.G.get_edge_data(node1, node2)
+
+    def getnodes(self, data=False):
+        return self.G.nodes(data=data)
+
+    def getedges(self, data=False):
+        return self.G.edges(data=data)
+
+    def getneighbors(self, node_id):
+        neighbors = None
+        try:
+            neighbors = self.G.neighbors(node_id)
+        except:
+            print 'Error getting the neighbors for ', node_id
+        return neighbors
+
+    def is_edge(self, node1, node2):
+        return self.G.has_edge(node1, node2)
 
     def getdegrees(self, node_id):
         return [self.G.in_degree(node_id), self.G.out_degree(node_id)] \
