@@ -31,6 +31,9 @@ class weeklyinfo:
                 end_date = ff.resetdate(survey_dates[idx] - dt.timedelta(days=1), should_be_zero=False)
             week_info[weekno] = (start_date, end_date)
             weekno += 1
+        start_date = ff.resetdate(survey_dates[-1], should_be_zero=True)
+        end_date = ff.resetdate(ff.converttodate(pr.end_datetime), should_be_zero=False)
+        week_info[weekno] = (start_date, end_date)
         return week_info
 
     def getweeklyfo(self, filepath):
