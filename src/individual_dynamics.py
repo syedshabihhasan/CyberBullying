@@ -3,6 +3,7 @@ import helper as hlp
 from filterByField import filterfields
 from basicInfo import privateInfo as pr
 import datetime as dt
+from createweeklyinfo import weeklyinfo
 
 
 def get_reci_probability(rec_dict, produce_csv=False):
@@ -70,15 +71,19 @@ def __basic_reciprocity_dict():
     return reciprocity_dict
 
 
-def __get_polarity_composition(messages):
-    polarity = [0, 0, 0]
+def __get_polarity_composition(messages, pid):
+    polarity = {}
+    src_new = pid
     for message in messages:
+        trg_new = message[pr.m_target] if not message[pr.m_target] == pid else message[pr.m_source]
+        if (src_new, trg_new) not in polarity:
+            polarity[(src_new, trg_new)] = [0, 0, 0]
         if 'P' == message[-1]:
-            polarity[0] += 1
+            polarity[(src_new, trg_new)][0] += 1
         elif 'N' == message[-1]:
-            polarity[1] += 1
+            polarity[(src_new, trg_new)][1] += 1
         elif 'U' == message[-1]:
-            polarity[2] += 1
+            polarity[(src_new, trg_new)][2] += 1
     return polarity
 
 
@@ -91,7 +96,7 @@ def individual_reciprocity_analysis(labelled_data, pid_dict, location_to_store):
         print 'Working with PID: ', pid, '(', pid_dict[pid], ')'
         messages_by_participant = ff.filterbyequality(pr.m_source, pid)
         messages_to_participant = ff.filterbyequality(pr.m_target, pid)
-        polarity_data[pid] = __get_polarity_composition(messages_by_participant + messages_to_participant)
+        polarity_data[pid] = __get_polarity_composition(messages_by_participant+messages_to_participant, pid)
         reciprocity_info[pid] = {}
         n = len(messages_by_participant)
         idx = 0
@@ -114,7 +119,7 @@ def individual_reciprocity_analysis(labelled_data, pid_dict, location_to_store):
     return reciprocity_info, polarity_data
 
 
-def analyze_info(reciprocity_dict, pid_dict, location_to_store):
+def analyze_info(reciprocity_dict, pid_dict, location_to_store, filename):
     final_csv_data = []
     for pid in reciprocity_dict:
         pid_new = hlp.getpid(pid_dict, pid)
@@ -134,7 +139,24 @@ def analyze_info(reciprocity_dict, pid_dict, location_to_store):
               'Pr(+|U)', 'Pr(-|U)', 'Pr(U|U)', 'Pr(X|U)',
               'Pr(+|-)', 'Pr(-|-)', 'Pr(U|-)', 'Pr(X|-)']
     toWrite = [header] + final_csv_data
-    hlp.writecsv(toWrite, location_to_store + 'pr_csv.csv', delimiter_sym=',')
+    hlp.writecsv(toWrite, location_to_store + filename, delimiter_sym=',')
+
+
+def analyze_polarity(polarity_dict, pid_dict, location_to_store, filename):
+    final_csv_data = [['source', 'target', 'Pos', 'Neg', 'Neu']]
+    print '++++ POLARITY INFORMATION ++++'
+    type_abr = {'participants': 'P', 'nonparticipants':'NP'}
+    for pid in polarity_dict:
+        src_new = hlp.getpid(pid_dict, pid)
+        print '**** For PID: P' + str(src_new) + ' ****'
+        for (src, trg) in polarity_dict[pid]:
+            trg_new, trg_type = hlp.getpid(pid_dict, trg, return_p_type=True)
+            print '(P'+str(src_new)+','+ type_abr[trg_type]+str(trg_new)+')'
+            temp = ['P'+str(src_new), type_abr[trg_type]+str(trg_new)]
+            for polarity in polarity_dict[pid][(src, trg)]:
+                temp.append(polarity)
+            final_csv_data.append(polarity)
+    hlp.writecsv(final_csv_data, location_to_store+final_csv_data, delimiter_sym=',')
 
 
 def main():
@@ -158,11 +180,31 @@ def main():
     if weekly_surveys is None:
         reciprocity_info, polarity_info = individual_reciprocity_analysis(labelled_data, pid_dict['participants'],
                                                                           location_to_store)
-        analyze_info(reciprocity_info, pid_dict, location_to_store)
+        analyze_info(reciprocity_info, pid_dict, location_to_store, 'pr_overall.csv')
+        analyze_polarity(polarity_info, pid_dict, location_to_store, 'polarity_overall.csv')
         hlp.dumpvariable([reciprocity_info, labelled_data, pid_dict, polarity_info],
-                         'reciprocity_info.dict', location_to_store)
+                         'reciprocity_info_overall.dict', location_to_store)
     else:
-        pass
+        # working with bimonthly data
+        months2 = [[1, 2, 3, 4, 5, 6, 7, 8],
+                   [9, 10, 11, 12, 13, 14, 15, 16],
+                   [17, 18, 19, 20, 21, 22, 23, 24, 25]]
+        wi = weeklyinfo()
+        weekly_info = wi.getweeklyfo(weekly_surveys)
+        ff = filterfields()
+        weekly_data = hlp.divideintoweekly(labelled_data, weekly_info, ff)
+        idx = 1
+        for bi_month in months2:
+            bi_month_data = []
+            for weekno in bi_month:
+                bi_month_data.extend(weekly_data[weekno])
+            reciprocity_info, polarity_info = individual_reciprocity_analysis(bi_month_data, pid_dict,
+                                                                              location_to_store)
+            analyze_info(reciprocity_info, pid_dict, location_to_store, 'pr_bimonthly_'+str(idx)+'.csv')
+            analyze_polarity(polarity_info, pid_dict, location_to_store, 'polarity_bimonthly_'+str(idx)+'.csv')
+            hlp.dumpvariable([reciprocity_info, labelled_data, pid_dict, polarity_info],
+                             'reciprocity_info_bimonthly_'+str(idx)+'.csv', location_to_store)
+            idx += 1
 
     print 'tadaa!'
 
