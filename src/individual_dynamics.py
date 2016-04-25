@@ -156,7 +156,7 @@ def analyze_polarity(polarity_dict, pid_dict, location_to_store, filename):
             for polarity in polarity_dict[pid][(src, trg)]:
                 temp.append(polarity)
             final_csv_data.append(polarity)
-    hlp.writecsv(final_csv_data, location_to_store+final_csv_data, delimiter_sym=',')
+    hlp.writecsv(final_csv_data, location_to_store+filename, delimiter_sym=',')
 
 
 def main():
@@ -195,10 +195,11 @@ def main():
         weekly_data = hlp.divideintoweekly(labelled_data, weekly_info, ff)
         idx = 1
         for bi_month in months2:
+            print 'For weeks: ', bi_month
             bi_month_data = []
             for weekno in bi_month:
                 bi_month_data.extend(weekly_data[weekno])
-            reciprocity_info, polarity_info = individual_reciprocity_analysis(bi_month_data, pid_dict,
+            reciprocity_info, polarity_info = individual_reciprocity_analysis(bi_month_data, pid_dict['participants'],
                                                                               location_to_store)
             analyze_info(reciprocity_info, pid_dict, location_to_store, 'pr_bimonthly_'+str(idx)+'.csv')
             analyze_polarity(polarity_info, pid_dict, location_to_store, 'polarity_bimonthly_'+str(idx)+'.csv')
