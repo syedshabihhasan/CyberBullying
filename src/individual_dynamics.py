@@ -204,7 +204,7 @@ def main():
             analyze_info(reciprocity_info, pid_dict, location_to_store, 'pr_bimonthly_'+str(idx)+'.csv')
             analyze_polarity(polarity_info, pid_dict, location_to_store, 'polarity_bimonthly_'+str(idx)+'.csv')
             hlp.dumpvariable([reciprocity_info, labelled_data, pid_dict, polarity_info],
-                             'reciprocity_info_bimonthly_'+str(idx)+'.csv', location_to_store)
+                             'reciprocity_info_bimonthly_'+str(idx)+'.data', location_to_store)
             idx += 1
 
     print 'tadaa!'
