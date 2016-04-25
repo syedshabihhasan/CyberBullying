@@ -243,48 +243,33 @@ def get_count_degrees_messages_directed(labelled_data, pid_dict):
     return in_m, out_m, in_d, out_d
 
 def plot_messages_degree(message_count, xlabel, ylabel, path_to_store, is_degree=False):
-    msg_dist = {}
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    if is_degree:
-        for mc in message_count:
-            if mc not in msg_dist:
-                msg_dist[mc] = 0
-            msg_dist[mc] += 1
-        items = sorted(msg_dist.items())
-        ecdf = ECDF(message_count)
-        x = list(ecdf.x)
-        y = list(ecdf.y)
-        # ax.plot([k for (k, v) in items], [v for (k, v) in items], 'b-', linewidth=2.0, marker='o', markersize=10.0,
-        #         markerfacecolor='r', markeredgecolor='k', markeredgewidth=2.0)
-        ax.plot(x, y, 'b-', linewidth=2.0)
-    else:
-        ecdf = ECDF(message_count)
-        x = list(ecdf.x)
-        #x = x[1:]
-        y = list(ecdf.y)
-        #y = y[1:]
-        ax.plot(x, y, 'b-', linewidth=2)
+    ecdf_in = ECDF(message_count[0])
+    ecdf_out = ECDF(message_count[1])
+    x_in = list(ecdf_in.x)
+    y_in = list(ecdf_in.y)
+    x_out = list(ecdf_out.x)
+    y_out = list(ecdf_out.y)
+    ax.plot(x_in, y_in, 'b-', linewidth=3.0, label='In')
+    ax.plot(x_out, y_out, 'r-', linewidth=3.0, label='Out')
     if not is_degree:
         ax.set_xscale('log')
-        #plt.ylim([1, 4])
         plt.ylim([0, 1])
         plt.xlim(xmax=20000)
         plt.xticks(fontsize=20)
         plt.yticks(np.arange(0, 1.1, 0.1), fontsize=20)
     else:
-        #ax.set_xscale('log')
-        #x.set_yscale('log')
         plt.ylim([0, 1])
         plt.yticks(np.arange(0, 1.1, 0.1), fontsize=20)
-        # plt.ylim([1, 10])
         plt.xticks(fontsize=20)
-        # plt.yticks(range(1, 11), fontsize=20)
     plt.xlabel(xlabel, fontsize=20)
     plt.ylabel(ylabel, fontsize=20)
+    plt.legend(loc=4, fontsize=20)
     plt.grid(True)
+    plt.gcf().subplots_adjust(bottom=0.15)
     plt.savefig(path_to_store)
-    #plt.show()
+    plt.show()
     return
 
 
@@ -582,14 +567,14 @@ def main():
         print '***Out Degree***'
         print 'Total: ', sum(out_d), 'Mean: ', np.mean(out_d), 'Std. dev.: ', np.std(out_d)
         print '***COUNTS***'
-        plot_messages_degree(in_m, '# of Incoming Messages', 'Cumulative Participant Prob.',
-                      location_to_store+'in_messages.pdf')
-        plot_messages_degree(out_m, '# of Outgoing Messages', 'Cumulative Participant Prob.',
-                      location_to_store+'out_messages.pdf')
-        plot_messages_degree(in_d, 'In Degree', 'Cumulative Participant Prob.',
-                      location_to_store+'in_degree.pdf', True)
-        plot_messages_degree(out_d, 'Out Degree', 'Cumulative Participant Prob.',
-                      location_to_store+'out_degree.pdf', True)
+        plot_messages_degree([in_m, out_m], '# of Messages', 'Cumulative Participant Prob.',
+                      location_to_store+'in_out_messages.pdf')
+        # plot_messages_degree(out_m, '# of Outgoing Messages', 'Cumulative Participant Prob.',
+        #               location_to_store+'out_messages.pdf')
+        plot_messages_degree([in_d, out_d], 'Degree', 'Cumulative Participant Prob.',
+                      location_to_store+'in_out_degree.pdf', True)
+        # plot_messages_degree(out_d, 'Out Degree', 'Cumulative Participant Prob.',
+        #               location_to_store+'out_degree.pdf', True)
     print 'TADAA!!'
 
 

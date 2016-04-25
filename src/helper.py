@@ -148,10 +148,13 @@ def getuniqueparticipants(data, mtype='sms', separate_pid_npid=False):
     return pid_dict
 
 
-def getpid(pid_dict, pid):
+def getpid(pid_dict, pid, return_p_type=False):
     for p_type in pid_dict.keys():
         if pid in pid_dict[p_type]:
-            return pid_dict[p_type][pid]
+            if return_p_type:
+                return pid_dict[p_type][pid], p_type
+            else:
+                return pid_dict[p_type][pid]
     return None
 
 
