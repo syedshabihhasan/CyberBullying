@@ -155,7 +155,7 @@ def analyze_polarity(polarity_dict, pid_dict, location_to_store, filename):
             temp = ['P'+str(src_new), type_abr[trg_type]+str(trg_new)]
             for polarity in polarity_dict[pid][(src, trg)]:
                 temp.append(polarity)
-            final_csv_data.append(polarity)
+            final_csv_data.append(temp)
     hlp.writecsv(final_csv_data, location_to_store+filename, delimiter_sym=',')
 
 
