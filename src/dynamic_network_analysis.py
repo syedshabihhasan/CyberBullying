@@ -1,5 +1,6 @@
 from filterByField import filterfields
 from basicInfo import privateInfo as pr
+from createweeklyinfo import weeklyinfo
 import datetime as dt
 import helper as hlp
 import argparse
@@ -73,19 +74,39 @@ def main():
                         help='labelled data from validate_balance_theory.py')
     parser.add_argument('-f', '-F', required=True,
                         help='folder to save the data in')
+    parser.add_argument('-w', '-W', required=False,
+                        help='survey file for weekly data processing')
+
 
     args = parser.parse_args()
     data_file = args.d
     location_to_store = args.f
+    weekly_surveys = args.w
 
     all_data = hlp.recovervariable(data_file)
     labelled_data = all_data[2]
     pid_dict = all_data[3]
 
-    reciprocity_dict, message_pairs = find_reciprocity(labelled_data, location_to_store)
-
-    hlp.dumpvariable([reciprocity_dict, message_pairs], 'reciprocity_counts_msgPairs_overall', location_to_store)
-
+    if weekly_surveys is None:
+        reciprocity_dict, message_pairs = find_reciprocity(labelled_data, location_to_store)
+        hlp.dumpvariable([reciprocity_dict, message_pairs], 'reciprocity_counts_msgPairs_overall', location_to_store)
+    else:
+        months2 = [[1, 2, 3, 4, 5, 6, 7, 8],
+                   [9, 10, 11, 12, 13, 14, 15, 16],
+                   [17, 18, 19, 20, 21, 22, 23, 24, 25]]
+        wi = weeklyinfo()
+        weekly_info = wi.getweeklyfo(weekly_surveys)
+        ff = filterfields()
+        weekly_data = hlp.divideintoweekly(labelled_data, weekly_info, ff)
+        idx = 1
+        for bi_month in months2:
+            print 'For weeks: ', bi_month
+            bi_month_data = []
+            for weekno in bi_month:
+                bi_month_data.extend(weekly_data[weekno])
+            reciprocity_dict, message_pairs = find_reciprocity(bi_month_data, location_to_store)
+            hlp.dumpvariable([reciprocity_dict, message_pairs],
+                             'reciprocity_counts_msgPairs_bimonthly_'+str(idx)+'.data', location_to_store)
 
 if __name__ == "__main__":
     main()

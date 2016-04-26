@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from statsmodels.distributions.empirical_distribution import ECDF
 from nltk.corpus import stopwords
 from collections import Counter
+from afinnpolarity import afinnsenti
 
 def __get_message_type(datum):
     src_t = datum[pr.m_source_type]
@@ -427,6 +428,19 @@ def __plot_imshow(data, xlabel, ylabel, xticks, yticks, filepath):
     plt.grid(True)
     plt.savefig(filepath)
 
+def __get_top_word_sentiment(top_words):
+    afinn = afinnsenti()
+    word_senti_count = []
+    for (word, count) in top_words:
+        polarity = afinn.get_sentiment_label(word)
+        if -1 == polarity:
+            word_senti_count.append((word, 'N', count))
+        elif 1 == polarity:
+            word_senti_count.append((word, 'P', count))
+        elif 0 == polarity:
+            word_senti_count.append((word, 'U', count))
+    return word_senti_count
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -524,7 +538,7 @@ def main():
                 counted_words = Counter(words_list[mtype])
                 counted_short = Counter(short_list[mtype])
                 print '***For '+mtype+' ***'
-                print 'Top 20 words: ', counted_words.most_common(20)
+                print 'Top 20 words: ', __get_top_word_sentiment(counted_words.most_common(20))
                 print 'Top 20 short: ', counted_short.most_common(20)
                 print '\n\n'
             hlp.dumpvariable([general_graph, random_graph, labelled_data, pid_dict], 'month_'+str(month_idx)+'.list', location_to_store)
@@ -538,7 +552,7 @@ def main():
             counted_words = Counter(words_list[mtype])
             counted_short = Counter(short_list[mtype])
             print '***For '+mtype+' ***'
-            print 'Top 20 words: ', counted_words.most_common(20)
+            print 'Top 20 words: ', __get_top_word_sentiment(counted_words.most_common(20))
             print 'Top 20 short: ', counted_short.most_common(20)
             print '\n\n'
         general_graph, random_graph = conduct_triad_analysis(labelled_data, pid_dict)
