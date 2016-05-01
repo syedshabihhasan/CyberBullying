@@ -42,11 +42,12 @@ class filterfields:
     def converttodate(self, string_date, dt_format = '%Y-%m-%d %H:%M:%S'):
         return dt.datetime.strptime(string_date, dt_format)
 
-    def filterbetweendates(self, start_date, end_date, data_to_work = [], right_equality=False):
+    def filterbetweendates(self, start_date, end_date, data_to_work = [], right_equality=False,
+                           date_field=pr.m_time_sent):
         filtered_data = []
         data_to_work = self.data if [] == data_to_work else data_to_work
         for data_row in data_to_work:
-            cur_date = self.converttodate(data_row[pr.m_time_sent])
+            cur_date = self.converttodate(data_row[date_field])
             if right_equality:
                 if start_date <= cur_date <= end_date:
                     filtered_data.append(data_row)

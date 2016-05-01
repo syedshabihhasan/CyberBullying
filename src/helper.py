@@ -16,7 +16,7 @@ def writecsv(data, filepath, delimiter_sym=','):
     print 'done'
 
 
-def readcsv(filepath, delimiter_sym=',', universal_read=False):
+def readcsv(filepath, delimiter_sym=',', universal_read=False, remove_first=False):
     print 'reading csv'
     f = open(filepath, 'rU' if universal_read else 'r')
     csv_obj = csv.reader(f, delimiter=delimiter_sym)
@@ -24,6 +24,7 @@ def readcsv(filepath, delimiter_sym=',', universal_read=False):
     for row in csv_obj:
         data.append(row)
     f.close()
+    data = data[1:] if remove_first else data
     return data
 
 
