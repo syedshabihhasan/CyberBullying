@@ -73,6 +73,8 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
                                                                            pid_hash)
         in_out_message_dict[hash_to_pid_dict[pid_hash]] = [[old_pid_in_weeks_counts, old_pid_out_week_counts],
                                                            [new_pid_in_weeks_counts, new_pid_out_weeks_counts]]
+        print 'Sums: o_o, n_o, o_i, n_i: ', sum(old_pid_out_week_counts), sum(new_pid_out_weeks_counts), \
+            sum(old_pid_in_weeks_counts), sum(new_pid_in_weeks_counts)
         print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
         for week in sorted_week_list:
             if len(old_out_week[week]) > len(new_out_week[week]):
