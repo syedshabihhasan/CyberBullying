@@ -67,14 +67,17 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
                                                                            pid_hash)
         in_out_message_dict[hash_to_pid_dict[pid_hash]] = [[old_pid_in_weeks_counts, old_pid_out_week_counts],
                                                            [new_pid_in_weeks_counts, new_pid_out_weeks_counts]]
-        if do_debug:
-            print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
-            for week in sorted_week_list:
-                if len(old_out_week[week]) > len(new_out_week[week]):
-                    print 'For week '+str(week)+' found old_out_week > new_out_week'
+        print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
+        for week in sorted_week_list:
+            if len(old_out_week[week]) > len(new_out_week[week]):
+                print 'For week '+str(week)+' found old_out_week > new_out_week: ', len(old_in_week[week]), \
+                    len(new_out_week[week])
+                if do_debug:
                     __old_new_compare(old_out_week[week], new_out_week[week])
-                if len(old_in_week[week]) > len(new_in_week[week]):
-                    print 'For week '+str(week)+' found old_in_week > new_in_week'
+            if len(old_in_week[week]) > len(new_in_week[week]):
+                print 'For week '+str(week)+' found old_in_week > new_in_week: ', len(old_in_week[week]), \
+                    len(new_in_week[week])
+                if do_debug:
                     __old_new_compare(old_in_week[week], new_in_week[week])
 
         hlp.dumpvariable([old_out, old_out_week, old_in, old_in_week, new_out, new_out_week, new_in, new_in_week],
@@ -99,7 +102,8 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
     ax_in.plot(xticks, new_in, 'bo-', linewidth=2, label='New', markersize=5, markeredgecolor='k', markerfacecolor='b',
                markeredgewidth=2)
     ax_in.set_title('Incoming Messages('+str(title)+')')
-    ax_in.legend(loc=1)
+    ax_in.set_xticks(xticks)
+    ax_in.legend(loc='2')
     ax_in.grid(True)
 
     ax_out.plot(xticks, old_out, 'ro-', linewidth=2, label='Old', markersize=5, markeredgecolor='k', markerfacecolor='r'
@@ -108,6 +112,7 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
                 , markeredgewidth=2)
     ax_out.set_title('Outgoing Messages('+str(title)+')')
     ax_out.legend(loc=2)
+    ax_out.set_xticks(xticks)
     ax_out.grid(True)
 
     ax.set_xlabel('Week #', fontsize=20)
