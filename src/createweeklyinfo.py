@@ -22,8 +22,7 @@ class weeklyinfo:
         first_l = True
         for idx in range(len(survey_dates)):
             if first_l:
-                start_date = ff.resetdate(ff.converttodate(pr.start_datetime) - dt.timedelta(days=7),
-                                          should_be_zero=True)
+                start_date = ff.resetdate(ff.converttodate(pr.start_datetime), should_be_zero=True)
                 end_date = ff.resetdate(survey_dates[idx] - dt.timedelta(days=1), should_be_zero=False)
                 first_l = False
             else:
