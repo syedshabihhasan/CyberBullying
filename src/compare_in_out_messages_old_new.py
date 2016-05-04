@@ -68,6 +68,7 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
     ax.set_ylabel('# of Messages', fontsize=20)
 
     plt.savefig(location_to_store+str(title)+'.pdf')
+    plt.close()
 
 
 def main():
