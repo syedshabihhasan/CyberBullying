@@ -49,7 +49,7 @@ def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj
 
 
 def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, hash_to_pid_dict, ff_obj,
-                       location_to_store):
+                       location_to_store, do_debug):
     in_out_message_dict = {}
     for pid_hash in hash_to_pid_dict:
         print '\n\n'
@@ -67,15 +67,15 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
                                                                            pid_hash)
         in_out_message_dict[hash_to_pid_dict[pid_hash]] = [[old_pid_in_weeks_counts, old_pid_out_week_counts],
                                                            [new_pid_in_weeks_counts, new_pid_out_weeks_counts]]
-
-        print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
-        for week in sorted_week_list:
-            if len(old_out_week[week]) > len(new_out_week[week]):
-                print 'For week '+str(week)+' found old_out_week > new_out_week'
-                __old_new_compare(old_out_week[week], new_out_week[week])
-            if len(old_in_week[week]) > len(new_in_week[week]):
-                print 'For week '+str(week)+' found old_in_week > new_in_week'
-                __old_new_compare(old_in_week[week], new_in_week[week])
+        if do_debug:
+            print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
+            for week in sorted_week_list:
+                if len(old_out_week[week]) > len(new_out_week[week]):
+                    print 'For week '+str(week)+' found old_out_week > new_out_week'
+                    __old_new_compare(old_out_week[week], new_out_week[week])
+                if len(old_in_week[week]) > len(new_in_week[week]):
+                    print 'For week '+str(week)+' found old_in_week > new_in_week'
+                    __old_new_compare(old_in_week[week], new_in_week[week])
 
         hlp.dumpvariable([old_out, old_out_week, old_in, old_in_week, new_out, new_out_week, new_in, new_in_week],
                          hash_to_pid_dict[pid_hash]+'.data', location_to_store)
@@ -107,7 +107,7 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
     ax_out.plot(xticks, new_out, 'bo-', linewidth=2, label='New', markersize=5, markeredgecolor='k', markerfacecolor='b'
                 , markeredgewidth=2)
     ax_out.set_title('Outgoing Messages('+str(title)+')')
-    ax_out.legend(loc=1)
+    ax_out.legend(loc=2)
     ax_out.grid(True)
 
     ax.set_xlabel('Week #', fontsize=20)
@@ -126,6 +126,7 @@ def main():
     parser.add_argument('-p', '-P', required=True, help='folder to store figures in, should end with /')
     parser.add_argument('-m', '-M', required=True, help='Master hash mapping csv')
     parser.add_argument('-mt', '-MT', required=True, nargs='+', help='Types of messages to look for')
+    parser.add_argument('-d', '-D', action='store_true', help='Flag to debug')
 
     args = parser.parse_args()
 
@@ -135,6 +136,7 @@ def main():
     location_to_store = args.p
     master_hash_csv = args.m
     message_types = args.mt
+    do_debug = args.d
 
     print 'Reading data...'
     master_csv = hlp.readcsv(master_hash_csv, delimiter_sym=',', remove_first=True)
@@ -160,7 +162,7 @@ def main():
 
     print 'Creating in out dictionary'
     in_out_message_dict = get_message_counts(filtered_old, filtered_new, week_list, weekly_info, master_dict, ff,
-                                             location_to_store)
+                                             location_to_store, do_debug)
 
     print 'Plotting...'
     for pid in in_out_message_dict:
