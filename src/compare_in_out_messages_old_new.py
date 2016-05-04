@@ -52,6 +52,7 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
                        location_to_store):
     in_out_message_dict = {}
     for pid_hash in hash_to_pid_dict:
+        print '\n\n'
         old_pid_out_week_counts, old_out, old_out_week = __get_weekly_counts(old_dataset, pr.m_source, pid_hash,
                                                                              weekly_info, ff_obj, sorted_week_list,
                                                                              pid_hash)
