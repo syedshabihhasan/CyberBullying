@@ -10,22 +10,29 @@ def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj
     out_in = ff_obj.filterbyequality(field_to_search, pid_hash, data=dataset)
     per_week = hlp.divideintoweekly(out_in, weekly_info, ff_obj)
     weekly_counts = [len(per_week[x]) for x in sorted_week_list]
-    return weekly_counts
+    return weekly_counts, out_in, per_week
 
 
-def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, hash_to_pid_dict, ff_obj):
+def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, hash_to_pid_dict, ff_obj,
+                       location_to_store):
     in_out_message_dict = {}
     for pid_hash in hash_to_pid_dict:
-        old_pid_out_week_counts = __get_weekly_counts(old_dataset, pr.m_source, pid_hash, weekly_info, ff_obj,
-                                                      sorted_week_list, pid_hash)
-        old_pid_in_weeks_counts = __get_weekly_counts(old_dataset, pr.m_target, pid_hash, weekly_info, ff_obj,
-                                                      sorted_week_list, pid_hash)
-        new_pid_out_weeks_counts = __get_weekly_counts(new_dataset, pr.m_source, pid_hash, weekly_info, ff_obj,
-                                                       sorted_week_list, pid_hash)
-        new_pid_in_weeks_counts = __get_weekly_counts(new_dataset, pr.m_target, pid_hash, weekly_info, ff_obj,
-                                                      sorted_week_list, pid_hash)
+        old_pid_out_week_counts, old_out, old_out_week = __get_weekly_counts(old_dataset, pr.m_source, pid_hash,
+                                                                             weekly_info, ff_obj, sorted_week_list,
+                                                                             pid_hash)
+        old_pid_in_weeks_counts, old_in, old_in_week = __get_weekly_counts(old_dataset, pr.m_target, pid_hash,
+                                                                           weekly_info, ff_obj, sorted_week_list,
+                                                                           pid_hash)
+        new_pid_out_weeks_counts, new_out, new_out_week = __get_weekly_counts(new_dataset, pr.m_source, pid_hash,
+                                                                              weekly_info, ff_obj,sorted_week_list,
+                                                                              pid_hash)
+        new_pid_in_weeks_counts, new_in, new_in_week = __get_weekly_counts(new_dataset, pr.m_target, pid_hash,
+                                                                           weekly_info, ff_obj, sorted_week_list,
+                                                                           pid_hash)
         in_out_message_dict[hash_to_pid_dict[pid_hash]] = [[old_pid_in_weeks_counts, old_pid_out_week_counts],
                                                            [new_pid_in_weeks_counts, new_pid_out_weeks_counts]]
+        hlp.dumpvariable([old_out, old_out_week, old_in, old_in_week, new_out, new_out_week, new_in, new_in_week],
+                         hash_to_pid_dict[pid_hash]+'.data', location_to_store)
     return in_out_message_dict
 
 
@@ -41,13 +48,20 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
     ax.spines['right'].set_color('none')
     ax.tick_params(labelcolor='w', top='off', bottom='off', left='off', right='off')
 
-    ax_in.plot(xticks, old_in, 'ro-', linewidth=2, label='Old', markersize=3, markeredgecolor='k', markerfacecolor='r')
-    ax_in.plot(xticks, new_in, 'bo-', linewidth=2, label='New', markersize=3, markeredgecolor='k', markerfacecolor='b')
+    ax_in.plot(xticks, old_in, 'ro-', linewidth=2, label='Old', markersize=5, markeredgecolor='k', markerfacecolor='r',
+               markeredgewidth=2)
+    ax_in.plot(xticks, new_in, 'bo-', linewidth=2, label='New', markersize=5, markeredgecolor='k', markerfacecolor='b',
+               markeredgewidth=2)
     ax_in.set_title('Incoming Messages('+str(title)+')')
+    ax_in.legend(loc='')
+    ax_in.grid(True)
 
-    ax_out.plot(xticks, old_out, 'ro-', linewidth=2, label='Old', markersize=3, markeredgecolor='k', markerfacecolor='r')
-    ax_out.plot(xticks, new_out, 'bo-', linewidth=2, label='New', markersize=3, markeredgecolor='k', markerfacecolor='b')
+    ax_out.plot(xticks, old_out, 'ro-', linewidth=2, label='Old', markersize=5, markeredgecolor='k', markerfacecolor='r'
+                , markeredgewidth=2)
+    ax_out.plot(xticks, new_out, 'bo-', linewidth=2, label='New', markersize=5, markeredgecolor='k', markerfacecolor='b'
+                , markeredgewidth=2)
     ax_out.set_title('Outgoing Messages('+str(title)+')')
+    ax_out.grid(True)
 
     ax.set_xlabel('Week #', fontsize=20)
     ax.set_ylabel('# of Messages', fontsize=20)
@@ -97,7 +111,8 @@ def main():
     week_list.sort()
 
     print 'Creating in out dictionary'
-    in_out_message_dict = get_message_counts(filtered_old, filtered_new, week_list, weekly_info, master_dict, ff)
+    in_out_message_dict = get_message_counts(filtered_old, filtered_new, week_list, weekly_info, master_dict, ff,
+                                             location_to_store)
 
     print 'Plotting...'
     for pid in in_out_message_dict:
