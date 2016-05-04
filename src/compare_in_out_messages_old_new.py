@@ -38,7 +38,7 @@ def __old_new_compare(old_data, new_data):
             print 'Messages present with everything else matching, old message: ', message, ' new_messages: ', \
                 new_data_dict[message_type][(src, dst)][timestamp]
     # to help me stop and think, will remove later
-    input('')
+    throw_away = raw_input('Press enter to continue')
     return
 
 def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj, sorted_week_list, pid_hash):
@@ -67,8 +67,7 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
                                                                            pid_hash)
         in_out_message_dict[hash_to_pid_dict[pid_hash]] = [[old_pid_in_weeks_counts, old_pid_out_week_counts],
                                                            [new_pid_in_weeks_counts, new_pid_out_weeks_counts]]
-        hlp.dumpvariable([old_out, old_out_week, old_in, old_in_week, new_out, new_out_week, new_in, new_in_week],
-                         hash_to_pid_dict[pid_hash]+'.data', location_to_store)
+
         print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
         for week in sorted_week_list:
             if len(old_out_week[week]) > len(new_out_week[week]):
@@ -77,6 +76,9 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
             if len(old_in_week[week]) > len(new_in_week[week]):
                 print 'For week '+str(week)+' found old_in_week > new_in_week'
                 __old_new_compare(old_in_week[week], new_in_week[week])
+
+        hlp.dumpvariable([old_out, old_out_week, old_in, old_in_week, new_out, new_out_week, new_in, new_in_week],
+                         hash_to_pid_dict[pid_hash]+'.data', location_to_store)
     return in_out_message_dict
 
 
