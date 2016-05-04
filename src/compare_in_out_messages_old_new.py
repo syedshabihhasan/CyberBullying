@@ -61,6 +61,7 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
     ax_out.plot(xticks, new_out, 'bo-', linewidth=2, label='New', markersize=5, markeredgecolor='k', markerfacecolor='b'
                 , markeredgewidth=2)
     ax_out.set_title('Outgoing Messages('+str(title)+')')
+    ax_out.legend(loc=1)
     ax_out.grid(True)
 
     ax.set_xlabel('Week #', fontsize=20)
