@@ -21,7 +21,7 @@ def __old_new_compare(old_data, new_data):
         if timestamp not in new_data_dict[message_type][(src, dst)]:
             new_data_dict[message_type][(src, dst)][timestamp] = []
         new_data_dict[message_type][(src, dst)][timestamp].append(message)
-    print new_data_dict
+    #print new_data_dict
     for datum in old_data:
         src = datum[pr.m_source]
         dst = datum[pr.m_target]
@@ -35,8 +35,14 @@ def __old_new_compare(old_data, new_data):
         elif timestamp not in new_data_dict[message_type][(src, dst)]:
             print 'Timestamp not found, timestamp: ', timestamp, ' old datum: ', datum
         else:
-            print 'Messages present with everything else matching, old message: ', message, ' new_messages: ', \
-                new_data_dict[message_type][(src, dst)][timestamp]
+            foundMessage = False
+            for new_message in new_data_dict[message_type][(src, dst)][timestamp]:
+                if message in new_message:
+                    foundMessage = True
+                    break
+            if not foundMessage:
+                print 'Everything matched except for message content, \nold message: ', message, \
+                    '\n new message list: ', new_data_dict[message_type][(src, dst)][timestamp]
     # to help me stop and think, will remove later
     throw_away = raw_input('Press enter to continue')
     return
