@@ -21,6 +21,7 @@ def __old_new_compare(old_data, new_data):
         if timestamp not in new_data_dict[message_type][(src, dst)]:
             new_data_dict[message_type][(src, dst)][timestamp] = []
         new_data_dict[message_type][(src, dst)][timestamp].append(message)
+    print new_data_dict
     for datum in old_data:
         src = datum[pr.m_source]
         dst = datum[pr.m_target]
@@ -28,11 +29,11 @@ def __old_new_compare(old_data, new_data):
         timestamp = datum[pr.m_time_sent]
         message = datum[pr.m_content]
         if message_type not in new_data_dict:
-            print 'Message type not found. MT: '+str(message_type)+', datum: ', datum
+            print 'Message type not found. MT: '+str(message_type)+', old datum: ', datum
         elif (src, dst) not in new_data_dict[message_type]:
-            print 'Source-Target pair not found, (src, dst): ', (src, dst), ' datum: ', datum
+            print 'Source-Target pair not found, (src, dst): ', (src, dst), ' old datum: ', datum
         elif timestamp not in new_data_dict[message_type][(src, dst)]:
-            print 'Timestamp not found, timestamp: ', timestamp, ' datum: ', datum
+            print 'Timestamp not found, timestamp: ', timestamp, ' old datum: ', datum
         else:
             print 'Messages present with everything else matching, old message: ', message, ' new_messages: ', \
                 new_data_dict[message_type][(src, dst)][timestamp]
