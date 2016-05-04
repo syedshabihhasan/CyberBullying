@@ -26,6 +26,9 @@ def __old_new_compare(old_data, new_data):
         src = datum[pr.m_source]
         dst = datum[pr.m_target]
         message_type = datum[pr.m_type]
+        if 'twitter' in message_type:
+            if dst == 'None':
+                dst = str(hash('Twitter'))
         timestamp = datum[pr.m_time_sent]
         message = datum[pr.m_content]
         if message_type not in new_data_dict:
