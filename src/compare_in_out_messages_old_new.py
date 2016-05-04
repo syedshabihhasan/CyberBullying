@@ -53,7 +53,7 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
     ax_in.plot(xticks, new_in, 'bo-', linewidth=2, label='New', markersize=5, markeredgecolor='k', markerfacecolor='b',
                markeredgewidth=2)
     ax_in.set_title('Incoming Messages('+str(title)+')')
-    ax_in.legend(loc='')
+    ax_in.legend(loc=1)
     ax_in.grid(True)
 
     ax_out.plot(xticks, old_out, 'ro-', linewidth=2, label='Old', markersize=5, markeredgecolor='k', markerfacecolor='r'
