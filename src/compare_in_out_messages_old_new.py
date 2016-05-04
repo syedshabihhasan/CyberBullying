@@ -70,7 +70,7 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
         print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
         for week in sorted_week_list:
             if len(old_out_week[week]) > len(new_out_week[week]):
-                print 'For week '+str(week)+' found old_out_week > new_out_week: ', len(old_in_week[week]), \
+                print 'For week '+str(week)+' found old_out_week > new_out_week: ', len(old_out_week[week]), \
                     len(new_out_week[week])
                 if do_debug:
                     __old_new_compare(old_out_week[week], new_out_week[week])
