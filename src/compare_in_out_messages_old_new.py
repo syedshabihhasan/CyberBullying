@@ -6,6 +6,40 @@ from filterByField import filterfields
 from createweeklyinfo import weeklyinfo
 
 
+def __old_new_compare(old_data, new_data):
+    new_data_dict = {}
+    for datum in new_data:
+        src = datum[pr.m_source]
+        dst = datum[pr.m_target]
+        message_type = datum[pr.m_type]
+        timestamp = datum[pr.m_time_sent]
+        message = datum[pr.m_content]
+        if message_type not in new_data_dict:
+            new_data_dict[message_type] = {}
+        if (src, dst) not in new_data_dict[message_type]:
+            new_data_dict[message_type][(src, dst)] = {}
+        if timestamp not in new_data_dict[message_type][(src, dst)]:
+            new_data_dict[message_type][(src, dst)][timestamp] = []
+        new_data_dict[message_type][(src, dst)][timestamp].append(message)
+    for datum in old_data:
+        src = datum[pr.m_source]
+        dst = datum[pr.m_target]
+        message_type = datum[pr.m_type]
+        timestamp = datum[pr.m_time_sent]
+        message = datum[pr.m_content]
+        if message_type not in new_data_dict:
+            print 'Message type not found. MT: '+str(message_type)+', datum: ', datum
+        elif (src, dst) not in new_data_dict[message_type]:
+            print 'Source-Target pair not found, (src, dst): ', (src, dst), ' datum: ', datum
+        elif timestamp not in new_data_dict[message_type][(src, dst)]:
+            print 'Timestamp not found, timestamp: ', timestamp, ' datum: ', datum
+        else:
+            print 'Messages present with everything else matching, old message: ', message, ' new_messages: ', \
+                new_data_dict[message_type][(src, dst)][timestamp]
+    # to help me stop and think, will remove later
+    input('')
+    return
+
 def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj, sorted_week_list, pid_hash):
     out_in = ff_obj.filterbyequality(field_to_search, pid_hash, data=dataset)
     per_week = hlp.divideintoweekly(out_in, weekly_info, ff_obj)
@@ -33,6 +67,14 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
                                                            [new_pid_in_weeks_counts, new_pid_out_weeks_counts]]
         hlp.dumpvariable([old_out, old_out_week, old_in, old_in_week, new_out, new_out_week, new_in, new_in_week],
                          hash_to_pid_dict[pid_hash]+'.data', location_to_store)
+        print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
+        for week in sorted_week_list:
+            if len(old_out_week[week]) > len(new_out_week[week]):
+                print 'For week '+str(week)+' found old_out_week > new_out_week'
+                __old_new_compare(old_out_week[week], new_out_week[week])
+            if len(old_in_week[week]) > len(new_in_week[week]):
+                print 'For week '+str(week)+' found old_in_week > new_in_week'
+                __old_new_compare(old_in_week[week], new_in_week[week])
     return in_out_message_dict
 
 
