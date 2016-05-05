@@ -50,8 +50,18 @@ def __old_new_compare(old_data, new_data):
     throw_away = raw_input('Press enter to continue')
     return
 
-def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj, sorted_week_list, pid_hash):
+def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj, sorted_week_list, pid_hash,
+                        is_old=False):
     out_in = ff_obj.filterbyequality(field_to_search, pid_hash, data=dataset)
+    if is_old:
+        out_in_filter = {}
+        for datum in out_in:
+            key = tuple(datum[1:])
+            if key not in out_in_filter:
+                out_in_filter[key] = datum
+        out_in = []
+        for key in out_in_filter.keys():
+            out_in.append(out_in_filter[key])
     per_week = hlp.divideintoweekly(out_in, weekly_info, ff_obj)
     weekly_counts = [len(per_week[x]) for x in sorted_week_list]
     return weekly_counts, out_in, per_week
@@ -64,10 +74,10 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
         print '\n\n'
         old_pid_out_week_counts, old_out, old_out_week = __get_weekly_counts(old_dataset, pr.m_source, pid_hash,
                                                                              weekly_info, ff_obj, sorted_week_list,
-                                                                             pid_hash)
+                                                                             pid_hash, True)
         old_pid_in_weeks_counts, old_in, old_in_week = __get_weekly_counts(old_dataset, pr.m_target, pid_hash,
                                                                            weekly_info, ff_obj, sorted_week_list,
-                                                                           pid_hash)
+                                                                           pid_hash, True)
         new_pid_out_weeks_counts, new_out, new_out_week = __get_weekly_counts(new_dataset, pr.m_source, pid_hash,
                                                                               weekly_info, ff_obj,sorted_week_list,
                                                                               pid_hash)
