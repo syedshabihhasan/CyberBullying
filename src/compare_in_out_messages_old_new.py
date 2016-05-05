@@ -55,8 +55,9 @@ def __old_new_compare(old_data, new_data):
                     foundMessage = True
                     break
             if not foundMessage:
-                print 'Everything matched except for message content, \nold message: ', message, \
-                    '\n new message list: ', new_data_dict[message_type][(src, dst)][timestamp]
+                # print 'Everything matched except for message content, \nold message: ', message, \
+                #     '\n new message list: ', new_data_dict[message_type][(src, dst)][timestamp]
+                pass
     # to help me stop and think, will remove later
     # throw_away = raw_input('Press enter to continue')
     return
