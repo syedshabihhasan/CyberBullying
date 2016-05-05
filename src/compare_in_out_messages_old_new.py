@@ -22,6 +22,17 @@ def __old_new_compare(old_data, new_data):
             new_data_dict[message_type][(src, dst)][timestamp] = []
         new_data_dict[message_type][(src, dst)][timestamp].append(message)
     # print new_data_dict
+    n_old_data = len(old_data)
+    no_dup_old_data = []
+    no_dup_dict = {}
+    for datum in old_data:
+        if tuple(datum[1:]) not in no_dup_dict:
+            no_dup_dict[tuple(datum[1:])] = datum
+    for unique_msg in no_dup_dict:
+        no_dup_old_data.append(no_dup_dict[unique_msg])
+    n_no_dup_old_data = len(no_dup_old_data)
+    print 'With duplicates: '+str(n_old_data)+', without: '+str(n_no_dup_old_data)
+    old_data = no_dup_old_data
     for datum in old_data:
         src = datum[pr.m_source]
         dst = datum[pr.m_target]
@@ -54,15 +65,6 @@ def __old_new_compare(old_data, new_data):
 def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj, sorted_week_list, pid_hash,
                         is_old=False):
     out_in = ff_obj.filterbyequality(field_to_search, pid_hash, data=dataset)
-    # if is_old:
-    #     out_in_filter = {}
-    #     for datum in out_in:
-    #         key = tuple(datum[1:])
-    #         if key not in out_in_filter:
-    #             out_in_filter[key] = datum
-    #     out_in = []
-    #     for key in out_in_filter.keys():
-    #         out_in.append(out_in_filter[key])
     per_week = hlp.divideintoweekly(out_in, weekly_info, ff_obj)
     weekly_counts = [len(per_week[x]) for x in sorted_week_list]
     return weekly_counts, out_in, per_week
