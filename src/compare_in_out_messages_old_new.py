@@ -22,17 +22,6 @@ def __old_new_compare(old_data, new_data):
             new_data_dict[message_type][(src, dst)][timestamp] = []
         new_data_dict[message_type][(src, dst)][timestamp].append(message)
     # print new_data_dict
-    n_old_data = len(old_data)
-    no_dup_old_data = []
-    no_dup_dict = {}
-    for datum in old_data:
-        if tuple(datum[1:]) not in no_dup_dict:
-            no_dup_dict[tuple(datum[1:])] = datum
-    for unique_msg in no_dup_dict:
-        no_dup_old_data.append(no_dup_dict[unique_msg])
-    n_no_dup_old_data = len(no_dup_old_data)
-    print 'With duplicates: '+str(n_old_data)+', without: '+str(n_no_dup_old_data)
-    old_data = no_dup_old_data
     for datum in old_data:
         src = datum[pr.m_source]
         dst = datum[pr.m_target]
@@ -66,6 +55,18 @@ def __old_new_compare(old_data, new_data):
 def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj, sorted_week_list, pid_hash,
                         is_old=False):
     out_in = ff_obj.filterbyequality(field_to_search, pid_hash, data=dataset)
+    if is_old:
+        n_old_data = len(out_in)
+        no_dup_old_data = []
+        no_dup_dict = {}
+        for datum in out_in:
+            if tuple(datum[1:]) not in no_dup_dict:
+                no_dup_dict[tuple(datum[1:])] = datum
+        for unique_msg in no_dup_dict:
+            no_dup_old_data.append(no_dup_dict[unique_msg])
+        n_no_dup_old_data = len(no_dup_old_data)
+        print 'With duplicates: '+str(n_old_data)+', without: '+str(n_no_dup_old_data)
+        out_in = no_dup_old_data
     per_week = hlp.divideintoweekly(out_in, weekly_info, ff_obj)
     weekly_counts = [len(per_week[x]) for x in sorted_week_list]
     return weekly_counts, out_in, per_week
@@ -74,7 +75,7 @@ def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj
 def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, hash_to_pid_dict, ff_obj,
                        location_to_store, do_debug):
     in_out_message_dict = {}
-    do_debug = True
+    # do_debug = True
     for pid_hash in hash_to_pid_dict:
         print '\n\n'
         old_pid_out_week_counts, old_out, old_out_week = __get_weekly_counts(old_dataset, pr.m_source, pid_hash,
@@ -95,18 +96,16 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
             sum(old_pid_in_weeks_counts), sum(new_pid_in_weeks_counts)
         print 'Checking the numbers for ' + hash_to_pid_dict[pid_hash] + '(' + str(pid_hash) + ')'
         for week in sorted_week_list:
-            # TODO: remove the True
-            if len(old_out_week[week]) > len(new_out_week[week]) or True:
+            if len(old_out_week[week]) > len(new_out_week[week]):
                 print '***For week ' + str(week) + ' found old_out_week > new_out_week: ', len(old_out_week[week]), \
                     len(new_out_week[week])
-                if do_debug:
-                    __old_new_compare(old_out_week[week], new_out_week[week])
-            # TODO: remove the True
-            if len(old_in_week[week]) > len(new_in_week[week]) or True:
+            if do_debug:
+                __old_new_compare(old_out_week[week], new_out_week[week])
+            if len(old_in_week[week]) > len(new_in_week[week]):
                 print '***For week ' + str(week) + ' found old_in_week > new_in_week: ', len(old_in_week[week]), \
                     len(new_in_week[week])
-                if do_debug:
-                    __old_new_compare(old_in_week[week], new_in_week[week])
+            if do_debug:
+                __old_new_compare(old_in_week[week], new_in_week[week])
 
         hlp.dumpvariable([old_out, old_out_week, old_in, old_in_week, new_out, new_out_week, new_in, new_in_week],
                          hash_to_pid_dict[pid_hash] + '.data', location_to_store)
