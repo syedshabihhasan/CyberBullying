@@ -21,7 +21,7 @@ def __old_new_compare(old_data, new_data):
         if timestamp not in new_data_dict[message_type][(src, dst)]:
             new_data_dict[message_type][(src, dst)][timestamp] = []
         new_data_dict[message_type][(src, dst)][timestamp].append(message)
-    #print new_data_dict
+    # print new_data_dict
     for datum in old_data:
         src = datum[pr.m_source]
         dst = datum[pr.m_target]
@@ -32,7 +32,7 @@ def __old_new_compare(old_data, new_data):
         timestamp = datum[pr.m_time_sent]
         message = datum[pr.m_content]
         if message_type not in new_data_dict:
-            print 'Message type not found. MT: '+str(message_type)+', old datum: ', datum
+            print 'Message type not found. MT: ' + str(message_type) + ', old datum: ', datum
         elif (src, dst) not in new_data_dict[message_type]:
             print 'Source-Target pair not found, (src, dst): ', (src, dst), ' old datum: ', datum
         elif timestamp not in new_data_dict[message_type][(src, dst)]:
@@ -50,18 +50,19 @@ def __old_new_compare(old_data, new_data):
     throw_away = raw_input('Press enter to continue')
     return
 
+
 def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj, sorted_week_list, pid_hash,
                         is_old=False):
     out_in = ff_obj.filterbyequality(field_to_search, pid_hash, data=dataset)
-    if is_old:
-        out_in_filter = {}
-        for datum in out_in:
-            key = tuple(datum[1:])
-            if key not in out_in_filter:
-                out_in_filter[key] = datum
-        out_in = []
-        for key in out_in_filter.keys():
-            out_in.append(out_in_filter[key])
+    # if is_old:
+    #     out_in_filter = {}
+    #     for datum in out_in:
+    #         key = tuple(datum[1:])
+    #         if key not in out_in_filter:
+    #             out_in_filter[key] = datum
+    #     out_in = []
+    #     for key in out_in_filter.keys():
+    #         out_in.append(out_in_filter[key])
     per_week = hlp.divideintoweekly(out_in, weekly_info, ff_obj)
     weekly_counts = [len(per_week[x]) for x in sorted_week_list]
     return weekly_counts, out_in, per_week
@@ -79,7 +80,7 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
                                                                            weekly_info, ff_obj, sorted_week_list,
                                                                            pid_hash, True)
         new_pid_out_weeks_counts, new_out, new_out_week = __get_weekly_counts(new_dataset, pr.m_source, pid_hash,
-                                                                              weekly_info, ff_obj,sorted_week_list,
+                                                                              weekly_info, ff_obj, sorted_week_list,
                                                                               pid_hash)
         new_pid_in_weeks_counts, new_in, new_in_week = __get_weekly_counts(new_dataset, pr.m_target, pid_hash,
                                                                            weekly_info, ff_obj, sorted_week_list,
@@ -88,21 +89,21 @@ def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, 
                                                            [new_pid_in_weeks_counts, new_pid_out_weeks_counts]]
         print 'Sums: o_o, n_o, o_i, n_i: ', sum(old_pid_out_week_counts), sum(new_pid_out_weeks_counts), \
             sum(old_pid_in_weeks_counts), sum(new_pid_in_weeks_counts)
-        print 'Checking the numbers for '+hash_to_pid_dict[pid_hash]+'('+str(pid_hash)+')'
+        print 'Checking the numbers for ' + hash_to_pid_dict[pid_hash] + '(' + str(pid_hash) + ')'
         for week in sorted_week_list:
             if len(old_out_week[week]) > len(new_out_week[week]):
-                print 'For week '+str(week)+' found old_out_week > new_out_week: ', len(old_out_week[week]), \
+                print 'For week ' + str(week) + ' found old_out_week > new_out_week: ', len(old_out_week[week]), \
                     len(new_out_week[week])
                 if do_debug:
                     __old_new_compare(old_out_week[week], new_out_week[week])
             if len(old_in_week[week]) > len(new_in_week[week]):
-                print 'For week '+str(week)+' found old_in_week > new_in_week: ', len(old_in_week[week]), \
+                print 'For week ' + str(week) + ' found old_in_week > new_in_week: ', len(old_in_week[week]), \
                     len(new_in_week[week])
                 if do_debug:
                     __old_new_compare(old_in_week[week], new_in_week[week])
 
         hlp.dumpvariable([old_out, old_out_week, old_in, old_in_week, new_out, new_out_week, new_in, new_in_week],
-                         hash_to_pid_dict[pid_hash]+'.data', location_to_store)
+                         hash_to_pid_dict[pid_hash] + '.data', location_to_store)
     return in_out_message_dict
 
 
@@ -122,7 +123,7 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
                markeredgewidth=2)
     ax_in.plot(xticks, new_in, 'bo-', linewidth=2, label='New', markersize=5, markeredgecolor='k', markerfacecolor='b',
                markeredgewidth=2)
-    ax_in.set_title('Incoming Messages('+str(title)+')')
+    ax_in.set_title('Incoming Messages(' + str(title) + ')')
     ax_in.set_xticks(xticks)
     ax_in.legend(loc=2)
     ax_in.grid(True)
@@ -131,7 +132,7 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
                 , markeredgewidth=2)
     ax_out.plot(xticks, new_out, 'bo-', linewidth=2, label='New', markersize=5, markeredgecolor='k', markerfacecolor='b'
                 , markeredgewidth=2)
-    ax_out.set_title('Outgoing Messages('+str(title)+')')
+    ax_out.set_title('Outgoing Messages(' + str(title) + ')')
     ax_out.legend(loc=2)
     ax_out.set_xticks(xticks)
     ax_out.grid(True)
@@ -139,7 +140,7 @@ def plot_distribution(old_in, old_out, new_in, new_out, xticks, title, location_
     ax.set_xlabel('Week #', fontsize=20)
     ax.set_ylabel('# of Messages', fontsize=20)
 
-    plt.savefig(location_to_store+str(title)+'.pdf')
+    plt.savefig(location_to_store + str(title) + '.pdf')
     plt.close()
 
 
@@ -197,6 +198,7 @@ def main():
                           in_out_message_dict[pid][1][0], in_out_message_dict[pid][1][1], week_list, pid,
                           location_to_store)
     print 'TADAA!!'
+
 
 if __name__ == "__main__":
     main()
