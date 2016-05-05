@@ -58,7 +58,7 @@ def __old_new_compare(old_data, new_data):
                 print 'Everything matched except for message content, \nold message: ', message, \
                     '\n new message list: ', new_data_dict[message_type][(src, dst)][timestamp]
     # to help me stop and think, will remove later
-    throw_away = raw_input('Press enter to continue')
+    # throw_away = raw_input('Press enter to continue')
     return
 
 
@@ -73,6 +73,7 @@ def __get_weekly_counts(dataset, field_to_search, to_equate, weekly_info, ff_obj
 def get_message_counts(old_dataset, new_dataset, sorted_week_list, weekly_info, hash_to_pid_dict, ff_obj,
                        location_to_store, do_debug):
     in_out_message_dict = {}
+    do_debug = True
     for pid_hash in hash_to_pid_dict:
         print '\n\n'
         old_pid_out_week_counts, old_out, old_out_week = __get_weekly_counts(old_dataset, pr.m_source, pid_hash,
