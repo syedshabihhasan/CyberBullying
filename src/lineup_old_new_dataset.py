@@ -117,11 +117,22 @@ def main():
                                                      ff.converttodate(pr.end_datetime), data_to_work=old_dataset,
                                                      right_equality=True, date_field=pr.m_time_sent)
     old_dataset = old_dataset_within_dates
+    old_dataset_counts = {}
+    for datum in old_dataset:
+        m_type = datum[pr.m_type]
+        if m_type not in old_dataset_counts:
+            old_dataset_counts[m_type] = 0
+        old_dataset_counts[m_type] += 1
+    print '*** OLD DATASET COUNTS***', old_dataset_counts
     print '***Finding mapping...'
     mapping_dict = {}
     inverted_mapping_dict = {}
     missed_dict = {}
     no_reason = []
+    counts_no_match = {'ord': {'sms':0, 'fb_message':0, 'twitter_status':0, 'twitter_message':0},
+              'semi': {'sms':0, 'fb_message':0, 'twitter_status':0, 'twitter_message':0},
+              'no': {'sms':0, 'fb_message':0, 'twitter_status':0, 'twitter_message':0}}
+    counts_match = {'sms':0, 'fb_message':0, 'twitter_status':0, 'twitter_message':0}
     for datum in old_dataset:
         m_result, msg_val = message_exists(datum, new_dataset_dictionary, ff)
         if m_result:
@@ -129,18 +140,31 @@ def main():
             if msg_val[1] not in inverted_mapping_dict:
                 inverted_mapping_dict[msg_val[1]] = []
             inverted_mapping_dict[msg_val[1]].append(datum[pr.msg_id])
+            m_type = datum[pr.m_type]
+            if m_type in counts_match:
+                counts_match[m_type] += 1
         else:
             src = datum[pr.m_source]
             trg = datum[pr.m_target]
+            m_type = datum[pr.m_type]
             if src in ordered_removed or trg in ordered_removed:
                 reason = 'ordered removed'
+                if m_type in counts_no_match['ord']:
+                    counts_no_match['ord'][m_type] += 1
             elif src in semi_consented or trg in semi_consented:
                 reason = 'semi consented'
+                if m_type in counts_no_match['semi']:
+                    counts_no_match['semi'][m_type] += 1
             else:
                 reason = ''
-                no_reason.append(datum)
+                temp = datum
+                temp.append(msg_val)
+                no_reason.append(temp)
+                if m_type in counts_no_match['no']:
+                    counts_no_match['no'][m_type] += 1
             missed_dict[datum[pr.msg_id]] = [msg_val, datum[pr.m_type], reason]
-
+    print '**NOT FOUND**', counts_no_match
+    print '**FOUND**', counts_match
     print '***Creating new dataset with mappings...'
     new_dataset_header = new_dataset[0]
     new_dataset_header.extend(['Old Message IDs'])
