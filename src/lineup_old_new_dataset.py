@@ -90,24 +90,38 @@ def main():
     parser.add_argument('-o', '-O', help='Old Dataset', required=True)
     parser.add_argument('-n', '-N', help='New Dataset', required=True)
     parser.add_argument('-f', '-F', help='Folder to store results in, ending with /', required=True)
+    parser.add_argument('-p', '-P', help='text file with list of people who were ordered to be removed', required=True)
+    parser.add_argument('-s', '-S', help='text file with list of people who were semi-consented', required=True)
 
     args = parser.parse_args()
 
     old_dataset_file = args.o
     new_dataset_file = args.n
     location_to_store = args.f
+    ordered_removed_file = args.p
+    semi_consented_file = args.s
 
-    print 'Reading data from arguments...'
+    print '***Reading data from arguments...'
     old_dataset = hlp.readcsv(old_dataset_file, delimiter_sym=',', remove_first=True)
     new_dataset = hlp.readcsv(new_dataset_file, delimiter_sym=',')
     new_dataset_dictionary = generate_new_dataset_dictionary(new_dataset[1:])
     new_dataset_msg_id_dictionary = generate_new_dataset_dictionary(new_dataset[1:], use_m_id=True)
+    with open(ordered_removed_file, 'r') as f:
+        ordered_removed = eval(f.read())
+    with open(semi_consented_file, 'r') as f:
+        semi_consented = eval(f.read())
 
-    print 'Finding mapping...'
+    print '***Filtering old data within dates of study...'
+    ff = filterfields()
+    old_dataset_within_dates = ff.filterbetweendates(ff.converttodate(pr.start_datetime),
+                                                     ff.converttodate(pr.end_datetime), data_to_work=old_dataset,
+                                                     right_equality=True, date_field=pr.m_time_sent)
+    old_dataset = old_dataset_within_dates
+    print '***Finding mapping...'
     mapping_dict = {}
     inverted_mapping_dict = {}
     missed_dict = {}
-    ff = filterfields()
+    no_reason = []
     for datum in old_dataset:
         m_result, msg_val = message_exists(datum, new_dataset_dictionary, ff)
         if m_result:
@@ -116,9 +130,18 @@ def main():
                 inverted_mapping_dict[msg_val[1]] = []
             inverted_mapping_dict[msg_val[1]].append(datum[pr.msg_id])
         else:
-            missed_dict[datum[pr.msg_id]] = msg_val
+            src = datum[pr.m_source]
+            trg = datum[pr.m_target]
+            if src in ordered_removed or trg in ordered_removed:
+                reason = 'ordered removed'
+            elif src in semi_consented or trg in semi_consented:
+                reason = 'semi consented'
+            else:
+                reason = ''
+                no_reason.append(datum)
+            missed_dict[datum[pr.msg_id]] = [msg_val, datum[pr.m_type], reason]
 
-    print 'Creating new dataset with mappings...'
+    print '***Creating new dataset with mappings...'
     new_dataset_header = new_dataset[0]
     new_dataset_header.extend(['Old Message IDs'])
     final_dataset = [new_dataset_header]
@@ -128,16 +151,17 @@ def main():
         datum.extend(old_msg_id)
         final_dataset.append(datum)
 
-    print 'Writing data...'
+    print '***Writing data...'
     hlp.writecsv(final_dataset, location_to_store+'new_old_mapped_hashed_dataset.csv', delimiter_sym=',')
     mapping_dict_list = [[x, mapping_dict[x][0], mapping_dict[x][1]] for x in mapping_dict]
     mapping_header = [['old_id', 'cosine_val', 'new_id']]
     mapping_header.extend(mapping_dict_list)
     hlp.writecsv(mapping_header, location_to_store+'old_to_new_mapping.csv', delimiter_sym=',')
-    missed_dict_list = [[x, missed_dict[x]] for x in missed_dict]
-    missed_header = [['old_id', 'Reason']]
+    missed_dict_list = [[x, missed_dict[x][0], missed_dict[x][1], missed_dict[x][2]] for x in missed_dict]
+    missed_header = [['old_id', 'Reason', 'm_type', 'Explanation']]
     missed_header.extend(missed_dict_list)
     hlp.writecsv(missed_header, location_to_store+'old_not_found.csv', delimiter_sym=',')
+    hlp.writecsv(no_reason, location_to_store+'old_not_found_no_reason.csv', delimiter_sym=',')
     print 'TADAA!!!'
 
 if __name__ == "__main__":
