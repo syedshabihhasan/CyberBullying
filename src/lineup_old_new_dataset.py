@@ -187,16 +187,16 @@ def main():
         final_dataset.append(datum)
 
     print '***Writing data...'
-    hlp.writecsv(final_dataset, location_to_store+'new_old_mapped_hashed_dataset_1.csv', delimiter_sym=',')
+    hlp.writecsv(final_dataset, location_to_store+'new_old_mapped_hashed_dataset.csv', delimiter_sym=',')
     mapping_dict_list = [[x, mapping_dict[x][0], mapping_dict[x][1]] for x in mapping_dict]
     mapping_header = [['old_id', 'cosine_val', 'new_id']]
     mapping_header.extend(mapping_dict_list)
-    hlp.writecsv(mapping_header, location_to_store+'old_to_new_mapping_1.csv', delimiter_sym=',')
+    hlp.writecsv(mapping_header, location_to_store+'old_to_new_mapping.csv', delimiter_sym=',')
     missed_dict_list = [[x, missed_dict[x][0], missed_dict[x][1], missed_dict[x][2]] for x in missed_dict]
     missed_header = [['old_id', 'Reason', 'm_type', 'Explanation']]
     missed_header.extend(missed_dict_list)
-    hlp.writecsv(missed_header, location_to_store+'old_not_found_1.csv', delimiter_sym=',')
-    hlp.writecsv(no_reason, location_to_store+'old_not_found_no_reason_1.csv', delimiter_sym=',')
+    hlp.writecsv(missed_header, location_to_store+'old_not_found.csv', delimiter_sym=',')
+    hlp.writecsv(no_reason, location_to_store+'old_not_found_no_reason.csv', delimiter_sym=',')
     print 'TADAA!!!'
 
 if __name__ == "__main__":
