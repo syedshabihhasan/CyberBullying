@@ -53,8 +53,18 @@ def generate_new_dataset_dictionary(new_dataset, use_m_id=False):
             new_dataset_dictionary[datum[nd.msg_id]] = datum
     return new_dataset_dictionary
 
+def __get_cosine_vals(message_list, old_message):
+    best_cosine = []
+    for message_datum in message_list:
+        new_message = message_datum[nd.m_content]
+        new_vec, old_vec = word_vectors(remove_punc(new_message), remove_punc(old_message))
+        cosine_sim_score = cosine_similarity(new_vec, old_vec)
+        best_cosine.append([cosine_sim_score, message_datum[nd.msg_id]])
+    sorted_cosines = sorted(best_cosine, key=lambda cosine_id: cosine_id[0])
+    return sorted_cosines
 
-def message_exists(datum_to_check, new_dataset_dictionary, ff):
+
+def message_exists(datum_to_check, new_dataset_dictionary, ff, ct_threshold=0.9):
     src = datum_to_check[pr.m_source]
     dst = datum_to_check[pr.m_target]
     m_type = datum_to_check[pr.m_type]
@@ -68,15 +78,16 @@ def message_exists(datum_to_check, new_dataset_dictionary, ff):
         if m_type in new_dataset_dictionary[(src, dst)]:
             if create_time_dt in new_dataset_dictionary[(src, dst)][m_type]:
                 message_list = new_dataset_dictionary[(src, dst)][m_type][create_time_dt]
-                best_cosine = []
-                for message_datum in message_list:
-                    new_message = message_datum[nd.m_content]
-                    new_vec, old_vec = word_vectors(remove_punc(new_message), remove_punc(old_message))
-                    cosine_sim_score = cosine_similarity(new_vec, old_vec)
-                    best_cosine.append([cosine_sim_score, message_datum[nd.msg_id]])
-                sorted_cosines = sorted(best_cosine, key=lambda cosine_id: cosine_id[0])
+                sorted_cosines = __get_cosine_vals(message_list, old_message)
                 return True, sorted_cosines[-1]
             else:
+                # message_list = []
+                # for ct in new_dataset_dictionary[(src, dst)][m_type]:
+                #     message_list.extend(new_dataset_dictionary[(src, dst)][m_type][ct])
+                # sorted_cosines = __get_cosine_vals(message_list, old_message)
+                # if sorted_cosines[-1][0] > ct_threshold:
+                #     print datum_to_check[pr.msg_id], sorted_cosines[-1][1], sorted_cosines[-1][0]
+                #     return True, sorted_cosines[-1]
                 return False, 'No message at the given time'
         else:
             return False, 'Message type does not exist for Source-Destination pair'
@@ -176,16 +187,16 @@ def main():
         final_dataset.append(datum)
 
     print '***Writing data...'
-    hlp.writecsv(final_dataset, location_to_store+'new_old_mapped_hashed_dataset.csv', delimiter_sym=',')
+    hlp.writecsv(final_dataset, location_to_store+'new_old_mapped_hashed_dataset_1.csv', delimiter_sym=',')
     mapping_dict_list = [[x, mapping_dict[x][0], mapping_dict[x][1]] for x in mapping_dict]
     mapping_header = [['old_id', 'cosine_val', 'new_id']]
     mapping_header.extend(mapping_dict_list)
-    hlp.writecsv(mapping_header, location_to_store+'old_to_new_mapping.csv', delimiter_sym=',')
+    hlp.writecsv(mapping_header, location_to_store+'old_to_new_mapping_1.csv', delimiter_sym=',')
     missed_dict_list = [[x, missed_dict[x][0], missed_dict[x][1], missed_dict[x][2]] for x in missed_dict]
     missed_header = [['old_id', 'Reason', 'm_type', 'Explanation']]
     missed_header.extend(missed_dict_list)
-    hlp.writecsv(missed_header, location_to_store+'old_not_found.csv', delimiter_sym=',')
-    hlp.writecsv(no_reason, location_to_store+'old_not_found_no_reason.csv', delimiter_sym=',')
+    hlp.writecsv(missed_header, location_to_store+'old_not_found_1.csv', delimiter_sym=',')
+    hlp.writecsv(no_reason, location_to_store+'old_not_found_no_reason_1.csv', delimiter_sym=',')
     print 'TADAA!!!'
 
 if __name__ == "__main__":
