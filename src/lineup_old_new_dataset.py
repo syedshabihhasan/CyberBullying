@@ -53,7 +53,8 @@ def generate_new_dataset_dictionary(new_dataset, use_m_id=False):
             new_dataset_dictionary[datum[nd.msg_id]] = datum
     return new_dataset_dictionary
 
-def __get_cosine_vals(message_list, old_message):
+
+def get_cosine_vals(message_list, old_message):
     best_cosine = []
     for message_datum in message_list:
         new_message = message_datum[nd.m_content]
@@ -78,7 +79,7 @@ def message_exists(datum_to_check, new_dataset_dictionary, ff, ct_threshold=0.9)
         if m_type in new_dataset_dictionary[(src, dst)]:
             if create_time_dt in new_dataset_dictionary[(src, dst)][m_type]:
                 message_list = new_dataset_dictionary[(src, dst)][m_type][create_time_dt]
-                sorted_cosines = __get_cosine_vals(message_list, old_message)
+                sorted_cosines = get_cosine_vals(message_list, old_message)
                 return True, sorted_cosines[-1]
             else:
                 # message_list = []

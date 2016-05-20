@@ -1,5 +1,6 @@
 import argparse
 import helper as hlp
+from basicInfo import new_dataset as nd
 from afinnpolarity import afinnsenti
 
 
@@ -30,7 +31,7 @@ def main():
     message_data = message_data[1:]
 
     afinn = afinnsenti(data=message_data, neutral_threshold=neutral_limit)
-    data = afinn.compilesentiment(separate_sentiment_list=separate_sentiment)
+    data = afinn.compilesentiment(separate_sentiment_list=separate_sentiment, field_no=nd.m_content)
     if(separate_sentiment):
         hlp.dumpvariable(data, file_to_store+'.list', location_to_store)
     else:
