@@ -299,11 +299,12 @@ def getfilterdata(filters_chosen, filter_files, cumulative_list=False, catch_all
         return data
 
 
-def divideintoweekly(all_data, weekly_info, ff):
+def divideintoweekly(all_data, weekly_info, ff, date_field=pr.m_time_sent):
     divided_data = {}
     for week_no in weekly_info:
         (start_date, end_date) = weekly_info[week_no]
-        divided_data[week_no] = ff.filterbetweendates(start_date, end_date, data_to_work=all_data, right_equality=True)
+        divided_data[week_no] = ff.filterbetweendates(start_date, end_date, data_to_work=all_data, right_equality=True,
+                                                      date_field=date_field)
     return divided_data
 
 
