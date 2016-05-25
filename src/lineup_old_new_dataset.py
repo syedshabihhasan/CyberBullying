@@ -75,6 +75,10 @@ def message_exists(datum_to_check, new_dataset_dictionary, ff, ct_threshold=0.9)
     if 'twitter' in m_type:
         if dst == 'None':
             dst = str(hash('Twitter'))
+    elif 'fb_activity' in m_type:
+        dst = str(hash(''))
+    elif 'fb_like' in m_type or 'fb_comment' in m_type:
+        dst = str(hash('temp'))
     if (src, dst) in new_dataset_dictionary:
         if m_type in new_dataset_dictionary[(src, dst)]:
             if create_time_dt in new_dataset_dictionary[(src, dst)][m_type]:
@@ -141,10 +145,14 @@ def main():
     inverted_mapping_dict = {}
     missed_dict = {}
     no_reason = []
-    counts_no_match = {'ord': {'sms':0, 'fb_message':0, 'twitter_status':0, 'twitter_message':0},
-              'semi': {'sms':0, 'fb_message':0, 'twitter_status':0, 'twitter_message':0},
-              'no': {'sms':0, 'fb_message':0, 'twitter_status':0, 'twitter_message':0}}
-    counts_match = {'sms':0, 'fb_message':0, 'twitter_status':0, 'twitter_message':0}
+    counts_no_match = {'ord': {'sms': 0, 'fb_message': 0, 'twitter_status': 0, 'twitter_message': 0,
+                               'fb_activity': 0, 'fb_like': 0, 'fb_comment': 0},
+                       'semi': {'sms': 0, 'fb_message': 0, 'twitter_status': 0, 'twitter_message': 0, 'fb_activity': 0,
+                                'fb_like': 0, 'fb_comment': 0},
+                       'no': {'sms': 0, 'fb_message': 0, 'twitter_status': 0, 'twitter_message': 0, 'fb_activity': 0,
+                              'fb_like': 0, 'fb_comment': 0}}
+    counts_match = {'sms': 0, 'fb_message': 0, 'twitter_status': 0, 'twitter_message': 0, 'fb_activity': 0,
+                    'fb_like': 0, 'fb_comment': 0}
     for datum in old_dataset:
         m_result, msg_val = message_exists(datum, new_dataset_dictionary, ff)
         if m_result:
@@ -175,7 +183,10 @@ def main():
                 if m_type in counts_no_match['no']:
                     counts_no_match['no'][m_type] += 1
             missed_dict[datum[pr.msg_id]] = [msg_val, datum[pr.m_type], reason]
-    print '**NOT FOUND**', counts_no_match
+    print '**NOT FOUND**'
+    for key_v in counts_no_match.keys():
+        print key_v
+        print counts_no_match[key_v]
     print '**FOUND**', counts_match
     print '***Creating new dataset with mappings...'
     new_dataset_header = new_dataset[0]
@@ -188,17 +199,18 @@ def main():
         final_dataset.append(datum)
 
     print '***Writing data...'
-    hlp.writecsv(final_dataset, location_to_store+'new_old_mapped_hashed_dataset.csv', delimiter_sym=',')
+    hlp.writecsv(final_dataset, location_to_store + 'new_old_mapped_hashed_dataset.csv', delimiter_sym=',')
     mapping_dict_list = [[x, mapping_dict[x][0], mapping_dict[x][1]] for x in mapping_dict]
     mapping_header = [['old_id', 'cosine_val', 'new_id']]
     mapping_header.extend(mapping_dict_list)
-    hlp.writecsv(mapping_header, location_to_store+'old_to_new_mapping.csv', delimiter_sym=',')
+    hlp.writecsv(mapping_header, location_to_store + 'old_to_new_mapping.csv', delimiter_sym=',')
     missed_dict_list = [[x, missed_dict[x][0], missed_dict[x][1], missed_dict[x][2]] for x in missed_dict]
     missed_header = [['old_id', 'Reason', 'm_type', 'Explanation']]
     missed_header.extend(missed_dict_list)
-    hlp.writecsv(missed_header, location_to_store+'old_not_found.csv', delimiter_sym=',')
-    hlp.writecsv(no_reason, location_to_store+'old_not_found_no_reason.csv', delimiter_sym=',')
+    hlp.writecsv(missed_header, location_to_store + 'old_not_found.csv', delimiter_sym=',')
+    hlp.writecsv(no_reason, location_to_store + 'old_not_found_no_reason.csv', delimiter_sym=',')
     print 'TADAA!!!'
+
 
 if __name__ == "__main__":
     main()
