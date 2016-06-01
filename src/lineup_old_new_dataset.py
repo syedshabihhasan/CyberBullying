@@ -54,13 +54,16 @@ def generate_new_dataset_dictionary(new_dataset, use_m_id=False):
     return new_dataset_dictionary
 
 
-def get_cosine_vals(message_list, old_message):
+def get_cosine_vals(message_list, old_message, field_no=nd.m_content, append_full_message=False):
     best_cosine = []
     for message_datum in message_list:
-        new_message = message_datum[nd.m_content]
+        new_message = message_datum[field_no]
         new_vec, old_vec = word_vectors(remove_punc(new_message), remove_punc(old_message))
         cosine_sim_score = cosine_similarity(new_vec, old_vec)
-        best_cosine.append([cosine_sim_score, message_datum[nd.msg_id]])
+        if append_full_message:
+            best_cosine.append([cosine_sim_score, message_datum])
+        else:
+            best_cosine.append([cosine_sim_score, message_datum[nd.msg_id]])
     sorted_cosines = sorted(best_cosine, key=lambda cosine_id: cosine_id[0])
     return sorted_cosines
 
@@ -153,6 +156,7 @@ def main():
                               'fb_like': 0, 'fb_comment': 0}}
     counts_match = {'sms': 0, 'fb_message': 0, 'twitter_status': 0, 'twitter_message': 0, 'fb_activity': 0,
                     'fb_like': 0, 'fb_comment': 0}
+    no_reason_counts = {}
     for datum in old_dataset:
         m_result, msg_val = message_exists(datum, new_dataset_dictionary, ff)
         if m_result:
@@ -182,12 +186,21 @@ def main():
                 no_reason.append(temp)
                 if m_type in counts_no_match['no']:
                     counts_no_match['no'][m_type] += 1
+                if m_type not in no_reason_counts.keys():
+                    no_reason_counts[m_type] = {}
+                if msg_val not in no_reason_counts[m_type].keys():
+                    no_reason_counts[m_type][msg_val] = 0
+                no_reason_counts[m_type][msg_val] += 1
             missed_dict[datum[pr.msg_id]] = [msg_val, datum[pr.m_type], reason]
-    print '**NOT FOUND**'
+    print '\n\n**NOT FOUND**'
     for key_v in counts_no_match.keys():
         print key_v
         print counts_no_match[key_v]
-    print '**FOUND**', counts_match
+    print '\n\n**NO REASON**'
+    for key_v in no_reason_counts.keys():
+        print key_v
+        print no_reason_counts[key_v]
+    print '\n\n**FOUND**', counts_match
     print '***Creating new dataset with mappings...'
     new_dataset_header = new_dataset[0]
     new_dataset_header.extend(['Old Message IDs'])
